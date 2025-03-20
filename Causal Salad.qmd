@@ -1,0 +1,107 @@
+---
+title: "The unhealthy causal salad: causal inference, DAGs and propensity scores"
+format: 
+  beamer
+editor: visual
+header-includes:
+  - \usepackage{graphicx}
+  - \titlegraphic{\vspace{-2cm} \centering \includegraphics[width=0.4\textwidth]{logo.png}}
+  - \usepackage{graphicx}
+---
+
+# Causal salad
+
+Say No to the Causal Salad!
+
+![](ItalianSalad.jpg){fig-align="center"}
+
+# Predizione (e perdizione)
+
+Se il mio obiettivo è predire (in senso statistico) non importa fare assunzioni causali: più variabili ho meglio predico (but beware of the overfitting)
+
+$y_i = \beta_0 + \sum_{j=1}^{p} \beta_j x_{ij} + e_i$
+
+![](overfitting.png){fig-align="center"}
+
+# Dalla predizione alla causazione
+
+$y_i = \beta_0 + \beta_1T_i + \beta_2x_i + e_i$
+
+![](pigeon.jpeg){fig-align="center"}
+
+# I tre criteri dell'inferenza causale
+
+-   Covariazione
+
+-   Precedenza temporale
+
+-   Esclusione di cause alternative
+
+# Average Treatment Effect
+
+Potential outcome framework: potential outcomes under alternative treatments
+
+-   Basato su ragionamento controfattuale (cosa sarebbe successo se mi avessero somministrato il farmaco X anziché quello Y?)
+
+-   Average Treatment Effect (ATE): $\widehat {ATE}={\frac {1}{N}}\sum _{i}(y_{1}(i)-y_{0}(i))$
+
+-   Peoblema: l'*i*-esima osservazione non può al contempo essere assegnata al trattamento (1) o al controllo (0)
+
+-   Soluzione: $ATE = \mathbb{E}[Y(1)] - \mathbb{E}[Y(0)]$
+  - Dove: 
+    - $\mathbb{E}[Y(1)]$ è l'outcome atteso sotto trattamento nella popolazione
+    - $\mathbb{E}[Y(1)]$ è l'outcome atteso sotto controllo nella popolazione
+
+-   
+
+    ![Sliding Doors, 1998](Sliding_Doors.png){width="400"}
+
+# Think before you regress
+
+I **Directed Acyclic Graphs**
+
+# DAG con ggdag()
+
+```{r packages, echo = FALSE, warning = FALSE, message = FALSE}
+library(ggdag)
+library(ggplot2)
+library(dagitty)
+library(patchwork)
+```
+
+```{r dag1, echo = FALSE}
+ 
+dag1<-dagify(Z~X,Y~Z,
+            exposure = "X",
+            outcome = "Y",
+            labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente")) 
+ggdag(dag, use_labels = "label", text = TRUE)
+
+dag2<-dagify(Z~X,Y~Z,
+            exposure = "X",
+            outcome = "Y",
+            labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente")) 
+ggdag(dag, use_labels = "label", text = TRUE)
+
+#dag1 + dag2
+```
+
+# DAG con ggdag()
+
+```{r dag2, echo = FALSE}
+dag<-dagify(Z~X,Y~Z,
+            exposure = "X",
+            outcome = "Y",
+            labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente")) 
+ggdag(dag, use_labels = "label", text = TRUE)
+```
+
+# DAG con ggdag()
+
+```{r dag3, echo = FALSE}
+dag<-dagify(Z~X,Y~Z,
+            exposure = "X",
+            outcome = "Y",
+            labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente")) 
+ggdag(dag, use_labels = "label", text = TRUE)
+```
