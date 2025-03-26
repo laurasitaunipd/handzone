@@ -15,19 +15,19 @@ Say No to the Causal Salad!
 
 ![](ItalianSalad.jpg){fig-align="center"}
 
-# Predizione (e perdizione)
+<!-- # Predizione (e perdizione) -->
 
-Se il mio obiettivo è predire (in senso statistico) non importa fare assunzioni causali: più variabili ho meglio predico (but beware of the overfitting)
+<!-- Se il mio obiettivo è predire (in senso statistico) non importa fare assunzioni causali: più variabili ho meglio predico (*but beware of overfitting*) -->
 
-$y_i = \beta_0 + \sum_{j=1}^{p} \beta_j x_{ij} + e_i$
+<!-- $y_i = \beta_0 + \sum_{j=1}^{p} \beta_j x_{ij} + e_i$ -->
 
-![](overfitting.png){fig-align="center" width="254"}
+<!-- ![](overfitting.png){fig-align="center" width="254"} -->
 
-# Dalla predizione alla causazione
+<!-- # Dalla predizione alla causazione -->
 
-$y_i = \beta_0 + \beta_1T_i + \beta_2x_i + e_i$
+<!-- $y_i = \beta_0 + \beta_1T_i + \beta_2x_i + e_i$ -->
 
-![](pigeon.jpeg){fig-align="center" width="293"}
+<!-- ![](pigeon.jpeg){fig-align="center" width="293"} -->
 
 # I tre criteri dell'inferenza causale
 
@@ -37,13 +37,15 @@ $y_i = \beta_0 + \beta_1T_i + \beta_2x_i + e_i$
 
 -   Esclusione di cause alternative
 
-# Controfattuali
+![](pigeon.jpeg){fig-align="center" height="240"}
 
-*Potential outcome framework: potential outcomes under alternative treatments* (Neyman e Rubin)
+<!-- # Controfattuali -->
 
--   Basato su ragionamento controfattuale (cosa sarebbe successo se mi avessero somministrato il farmaco X anziché quello Y?)
+<!-- *Potential outcome framework: potential outcomes under alternative treatments* (Neyman e Rubin) -->
 
-    ![Sliding Doors, 1998](Sliding_Doors.png){width="363"}
+<!-- -   Basato su ragionamento controfattuale (cosa sarebbe successo se mi avessero somministrato il farmaco X anziché quello Y?) -->
+
+<!--     ![Sliding Doors, 1998](Sliding_Doors.png){width="363"} -->
 
 <!-- # Average Treatment Effect -->
 
@@ -93,17 +95,15 @@ $y_i = \beta_0 + \beta_1T_i + \beta_2x_i + e_i$
 
 Introdotti da Judea Pearl, i **Directed Acyclic Graphs (DAG)** aiutano a ragionare sulla causalità
 
-Terminologia:
-
--   *Graphs*: *nodi* e *connessioni*
-
 -   *Directed:* le connessioni hanno frecce direzionali
 
 -   *Acyclic*: le cause non possono tornare indietro su se stesse
 
--   I nodi possono essere genitori (*parents)* di un altro nodo figlio (*child*) se sono immediatamente antecedenti al nodo
+-   *Graphs*: *nodi* e *connessioni*
 
--   Sono antenati (*ancestors*) se causano i genitori, oppure discendenti (*descendants*) se seguono causalmente i figli.
+    -   I nodi possono essere genitori (*parents)* di un altro nodo figlio (*child*) se sono immediatamente antecedenti al nodo
+
+    -   Sono antenati (*ancestors*) se causano i genitori, oppure discendenti (*descendants*) se seguono causalmente i figli.
 
 # DAG e Structural Causal Models
 
@@ -115,25 +115,76 @@ Terminologia:
 
     -   *endogene* (V),
 
--   Nei DAG la freccia è usata quando si ipotizza una relazione *causale* ad es. da X a Y (X -\>Y). Si può anche ipotizzare, ma va giustificata, l'assenza di una relazione, oppure si può ipotizzare una relazione bidirezionale (X \<-\> Y), che però è equivalente a ipotizzare la presenza du una variable non osservata - o latente - che causa entrambe (X \<- U -\> Y).
+-   Nei DAG la freccia è usata quando si ipotizza una relazione *causale* ad es. da X a Y (X -\>Y).
+
+    -   La elazione bidirezionale (X \<-\> Y), equivale alla presenza du una variable non osservata - o latente - che causa entrambe (X \<- U -\> Y).
 
 -   Nei DAG possiamo rappresentare l'effetto di un insieme di variabili, chiamate *exposures* su altre variabili che chiameremo *outcomes*
 
-# DAG e ragionamento causale
+# DAG e ragionamento causale 1
 
--   Catene (X -\> Z -\> Y)
+-   *Chains* (X -\> Z -\> Y)
 
--   Forchette (X \<- Z -\> Y)
+-   *Forks* (X \<- Z -\> Y)
 
--   Collider (X -\> Z \<- Y)
+-   *Colliders* (X -\> Z \<- Y)
 
-Sia nelle catene che nelle forchette, controllare per Z **blocca** il percorso (*path*) introducendo un'indipendenza condizionata tra X e Y: $X \perp\!\!\!\perp Y \mid Z$
+    ```{r echo = F, out.width= "85%"}
+    library(dagitty)
 
-Nei *collider*, controllare per Z **apre** il percorso (*path*) introducendo una dipendenza condizionata tra X e Y: $X \not \perp\!\!\! \not \perp Y \mid Z$
+    # --- Set up 3-panel layout ---
+    par(mfrow = c(1, 3), mar = c(2, 2, 3, 2), cex = 2.5)  # 1 row, 3 columns
 
-La *d*-separation di due variabili si ha quando, attraverso una covariata, si blocca ogni percorso (*path*) tra loro. Viceversa, si ha la *d*-connection.
+    # --- 1. Chain DAG ---
+    dag_chain <- dagitty("dag { 
+                         X[exposure]
+                         Y[outcome]
+                         X -> Z
+                         Z -> Y
+                         }")
+    coordinates(dag_chain) <- list(
+      x = c(X = 0, Z = 1, Y = 2),
+      y = c(X = 0, Z = -1/2, Y = 0)
+    )
+    plot(dag_chain, main = "Chain: X → Z → Y")
 
--   Questi concetti sono importanti per DAG con più variabili. Ad esempio, controllare per un discendente di un collisore rischia di creare una *d*-connection tra variabili che prima erano *d*-separated.
+    # --- 2. Fork DAG ---
+    dag_fork <- dagitty("dag { 
+                         X[exposure]
+                         Y[outcome]
+                         Z -> X
+                         Z -> Y
+                         }")
+    coordinates(dag_fork) <- list(
+      x = c(X = 0, Z = 1, Y = 2),
+      y = c(X = 0, Z = -1/2, Y = 0)
+    )
+    plot(dag_fork, main = "Fork: Z → X, Z → Y")
+
+    # --- 3. Collider DAG ---
+    dag_collider <- dagitty("dag { 
+                         X[exposure]
+                         Y[outcome]
+                         X -> Z
+                         Y -> Z
+                         }")
+    coordinates(dag_collider) <- list(
+      x = c(X = 0, Z = 1, Y = 2),
+      y = c(X = 0, Z = -1/2, Y = 0)
+    )
+    plot(dag_collider, main = "Collider: X → Z ← Y")
+
+    ```
+
+# DAG e ragionamento causale 2
+
+-   Nelle *chains* e nelle *forks*, controllare per *Z* **blocca** il percorso (*path*) introducendo un*'indipendenza condizionata t*ra X e Y: $X \perp\ Y \mid Z$
+
+-   Nei *collider*, controllare per Z **apre** il percorso (*path*) introducendo una dipendenza condizionata tra X e Y: $X \not \perp \mid Z$
+
+-   La *d*-*separation* di due variabili si ha quando, attraverso una covariata, si blocca ogni percorso (*path*) tra loro. Viceversa, si ha la *d*-*connection*.
+
+    Questi concetti sono importanti per DAG con più variabili. Ad esempio, controllare per un discendente di un collisore rischia di creare una *d*-connection tra variabili che prima erano *d*-separated.
 
 # Struttura dei DAG
 
@@ -168,10 +219,6 @@ coordinates(dag1) <- list(
 
 plot( dag1 )
 ```
-
-# Possibili bias nella stima
-
-![Del Giudice e Gangestead, 2021, SM](DelGiudice_1.png){fig-align="left" width="290"}
 
 # Variabili confondenti
 
@@ -324,11 +371,15 @@ coordinates(dag_berkson) <- list(
 plot(dag_berkson)
 ```
 
+# Riicapitoliamo: in possibili bias nella stima
+
+![Del Giudice e Gangestead, 2021, SM](DelGiudice_1.png){fig-align="left" width="290"}
+
 # Un esempio: scegliere un gruppo di controllo
 
 -   Studio su donne con iperplasia surrenale congenita (CAH) e sociosessualità promiscua
 
-    -   Per quli variabili matchare i controlli? Primi candidati: età, livello di istruzione, orientamento politico, religiosità, status relazionale...ma ha senso questa insalata causale?
+    -   Per qulai variabili appaiare i controlli? Primi candidati: età, livello di istruzione, orientamento politico, religiosità, status relazionale...ma ha senso questa insalata causale?
 
 ```{r echo = F, out.width="75%"}
 dagCAH1 <- dagitty('dag {
@@ -360,9 +411,11 @@ plot(dagCAH1)
 
 # Andare su DAGitty.net
 
-<https://dagitty.net/dags.html?id=rrZZzgPV>
+<https://dagitty.net/dags.html?id=EP9fXebg>
 
-![](Studio%20CAH.png){fig-align="left" width="450"} <!-- # DAGitty 1 -->
+![](Studio%20CAH.png){fig-align="left" width="450"}
+
+<!-- # DAGitty 1 -->
 
 <!-- L'esempio delle punizioni corporali \small -->
 
@@ -619,7 +672,7 @@ Dati ottenuti dal database europeo SHARE relativi a soggetti italiani
 I modelli di regressione che intendiamo confrontare sono corretti
 
 1.  con **aggiustamento additivo** delle covariate
-2.  con **aggiustamento additivo** delle covariate + tramite **propensity score** (ottenuta applicando il metodo IPTW)
+2.  con **aggiustamento additivo** delle covariate + aggiustamento tramite **propensity score** (applicando il metodo IPTW)
 
 # Studio d'esempio (3)
 
