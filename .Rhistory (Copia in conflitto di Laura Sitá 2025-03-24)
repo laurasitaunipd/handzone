@@ -1,0 +1,512 @@
+setwd("~/Library/CloudStorage/GoogleDrive-marcotullio.liuzza@unipd.it/Il mio Drive/Supervisione PhD/PhD Occhiuto/COVID-SDO/R")
+rm(list = ls())
+load('merged-data.RData')
+options(scipen = 999)
+library(psych)
+library(lavaan)
+library(semTools)
+library(semPlot)
+library(tidyverse)
+library(ltm)
+library(mirt)
+library(lme4)
+library(lmerTest)
+library(effects)
+dBoth <- dBoth[dBoth$borninresiding,] # remove n = 852 not born there
+dBoth <- dBoth[!dBoth$failed_control,] # remove n = 667 who failed the check
+rm(list = ls())
+load('merged-data.RData')
+options(scipen = 999)
+library(psych)
+library(lavaan)
+library(semTools)
+library(semPlot)
+library(tidyverse)
+library(ltm)
+library(mirt)
+library(lme4)
+library(lmerTest)
+library(effects)
+dBoth <- dBoth[dBoth$borninresiding,] # remove n = 852 not born there
+dBoth <- dBoth[!dBoth$failed_control,] # remove n = 667 who failed the check
+idSDO <- grep(names(dBoth), pattern = "^sdo")
+cor(dBoth[complete.cases(dBoth[, idSDO]), idSDO])
+# recode
+dBoth[, idSDO[c(1,3)]] <- max(dBoth[, idSDO], na.rm = T) + 1 - dBoth[, idSDO[c(1,3)]]
+uni.sdo <- '
+SDO =~ sdo1 + sdo2 + sdo3 + sdo4
+'
+uni.sdo.fit <- cfa(uni.sdo, ordered = names(dBoth)[idSDO], std.lv = T, data = dBoth[complete.cases(dBoth[, idSDO]) , idSDO])
+fitMeasures(uni.sdo.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+parameterEstimates(uni.sdo.fit, standardized = T)
+modificationIndices(uni.sdo.fit, sort = T)
+uni.sdo.bis <- '
+SDO =~ sdo1 + sdo2 + sdo3 + sdo4
+sdo1	~~	sdo2
+'
+uni.sdo.fit.bis <- cfa(uni.sdo.bis, ordered = names(dBoth)[idSDO], std.lv = T, data = dBoth[complete.cases(dBoth[, idSDO]) , idSDO])
+fitMeasures(uni.sdo.fit.bis, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") #residual covariance fixes the issue
+dBoth$SDO_tot <- rowMeans(dBoth[, idSDO], na.rm = T)
+idrwa <- grep(names(dBoth), pattern = "^rwa")
+cor(dBoth[complete.cases(dBoth[, idrwa]), idrwa])
+#recode
+dBoth[, idrwa[c(3,5,6)]] <- max(dBoth[, idrwa], na.rm = T) + 1 - dBoth[, idrwa[c(3,5,6)]]
+uni.rwa <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5 + rwa6
+'
+uni.rwa.fit <- cfa(uni.rwa, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+parameterEstimates(uni.rwa.fit, standardized = T)
+modificationIndices(uni.rwa.fit, sort. = T)
+uni.rwa.bis <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5 + rwa6
+rwa3	~~	rwa5
+'
+uni.rwa.fit.bis <- cfa(uni.rwa.bis, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit.bis, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") #residual covariance does not fix the issue
+modificationIndices(uni.rwa.fit.bis, sort. = T)
+uni.rwa.tris <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5 + rwa6
+rwa3	~~	rwa5
+rwa1	~~	rwa4
+'
+uni.rwa.fit.tris <- cfa(uni.rwa.tris, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit.tris, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") #residual covariance does not fix the issue
+modificationIndices(uni.rwa.fit.tris, sort. = T)
+uni.rwa.quater <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5 + rwa6
+rwa3	~~	rwa5
+rwa1	~~	rwa4
+rwa2	~~	rwa6
+'
+uni.rwa.fit.quater <- cfa(uni.rwa.quater, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit.quater, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") #residual covariance does now fixes the issue
+uni.rwa.red <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+'
+uni.rwa.fit.red <- cfa(uni.rwa.red, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit.red, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") # rmsea.scaled still sucks
+modificationIndices(uni.rwa.fit.red, sort. = T)
+uni.rwa.red.bis <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+rwa3	~~	rwa5
+'
+uni.rwa.fit.red.bis <- cfa(uni.rwa.red.bis, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit.red.bis, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") # rmsea.scaled still sucks
+modificationIndices(uni.rwa.fit.red.bis, sort. = T)
+uni.rwa.red.tris <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+rwa3	~~	rwa5
+rwa1	~~	rwa4
+'
+uni.rwa.fit.red.tris <- cfa(uni.rwa.red.tris, ordered = names(dBoth)[idrwa], std.lv = T, data = dBoth[complete.cases(dBoth[, idrwa]) , idrwa])
+fitMeasures(uni.rwa.fit.red.tris, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") # now works. This is the best model both in terms of fit, and conceptually (covariances depend on shared method, after dropping the worst item)
+dBoth$rwa_tot <- rowMeans(dBoth[, idrwa[-6]], na.rm = T)
+cor(dBoth$SDO_tot, dBoth$rwa_tot, use = "pairwise.complete.obs")
+idCovid <- grep(names(dBoth), pattern = "^covid")[1:5]
+cor(dBoth[complete.cases(dBoth[, idCovid]), idCovid])
+uni.Covid <- '
+COVID =~ covid1 + covid2 + covid3 + covid4 + covid5
+'
+uni.covid.fit <- cfa(uni.Covid, std.lv = T, data = dBoth[complete.cases(dBoth[, idCovid]) , idCovid],  ordered = names(dBoth)[idCovid])
+fitMeasures(uni.covid.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+parameterEstimates(uni.covid.fit, standardized = T) #item 3 might be removed
+modificationIndices(uni.covid.fit, sort. = T)
+out.pa.covid <- fa.parallel(dBoth[complete.cases(dBoth[, idCovid]), idCovid], fa = "fa", cor = "poly") # one factor
+plot(out.pa.covid$fa.values, pch = 19, main = "screeplot")
+lines(out.pa.covid$fa.values)
+fa.out <- fa(dBoth[complete.cases(dBoth[, idCovid]), idCovid], 1, cor = "poly")
+print(fa.out$loadings, cut=.3, digits = 2)
+uni.Covid.red <- '
+COVID =~  covid1 + covid2 + covid4 + covid5
+'
+uni.covid.fit.red <- cfa(uni.Covid.red, std.lv = T, data = dBoth[complete.cases(dBoth[, idCovid]) , idCovid], ordered = names(dBoth)[idCovid])
+fitMeasures(uni.covid.fit.red, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") #all but one
+parameterEstimates(uni.covid.fit.red, standardized = T) #item 3 might be removed
+modificationIndices(uni.covid.fit.red, sort. = T) # for some reason, 4 and 5 hav a lot of residual covariance
+uni.Covid.red2 <- '
+COVID =~  covid1 + covid2 + covid4 + covid5
+covid4 ~~ covid5
+'
+uni.covid.fit.red2 <- cfa(uni.Covid.red2, std.lv = T, data = dBoth[complete.cases(dBoth[, idCovid]) , idCovid], ordered = names(dBoth)[idCovid])
+parameterestimates(uni.covid.fit.red2)
+fitMeasures(uni.covid.fit.red2, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix") # now it works
+dBoth$Covid_tot <- rowMeans(dBoth[, idCovid[c(-3)]], na.rm = T)
+# BODS data reduction
+idBODS <- grep(names(dBoth), pattern = "^BODS")
+uni.BODS <- '
+BODS =~ BODS1 + BODS2 + BODS3 + BODS4 + BODS5 + BODS6 + BODS7 + BODS8 + BODS9 + BODS10 + BODS11 + BODS12
+BODS1 ~~ BODS2
+BODS3 ~~ BODS4
+BODS5 ~~ BODS6
+BODS7 ~~ BODS8
+BODS9 ~~ BODS10
+BODS11 ~~ BODS12
+'
+uni.BODS.fit <- cfa(uni.BODS, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODS]) , idBODS], ordered = names(dBoth)[idBODS])
+fitMeasures(uni.BODS.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+two.BODS <- '
+BODS_int =~ BODS1 + BODS3 + BODS5 + BODS7 + BODS9 + BODS11
+BODS_ext =~ BODS2 + BODS4 + BODS6 + BODS8 + BODS10 + BODS12
+BODS1 ~~ BODS2
+BODS3 ~~ BODS4
+BODS5 ~~ BODS6
+BODS7 ~~ BODS8
+BODS9 ~~ BODS10
+BODS11 ~~ BODS12
+'
+two.BODS.fit <- cfa(two.BODS, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODS]) , idBODS], ordered = names(dBoth)[idBODS])
+fitMeasures(two.BODS.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+modificationindices(two.BODS.fit) # modification indexes actually point towards a unidimensional construct
+bif.BODS <- '
+BODS =~ BODS1 + BODS2 + BODS3 + BODS4 + BODS5 + BODS6 + BODS7 + BODS8 + BODS9 + BODS10 + BODS11 + BODS12
+BODS_int =~ BODS1 + BODS3 + BODS5 + BODS7 + BODS9 + BODS11
+BODS_ext =~ BODS2 + BODS4 + BODS6 + BODS8 + BODS10 + BODS12
+'
+bif.BODS.fit <- cfa(bif.BODS, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODS]) , idBODS], ordered = names(dBoth)[idBODS], orthogonal = T)
+fitMeasures(bif.BODS.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+modificationindices(two.BODS.fit, sort = T) # modification indexes actually point towards a unidimensional construct
+parameterEstimates(bif.BODS.fit, standardized = T)
+# exclude items 1-2
+bif.BODS.red <- '
+BODS =~  BODS3 + BODS4 + BODS5 + BODS6 + BODS7 + BODS8 + BODS9 + BODS10 + BODS11 + BODS12
+BODS_int =~ BODS3 + BODS5 + BODS7 + BODS9 + BODS11
+BODS_ext =~ BODS4 + BODS6 + BODS8 + BODS10 + BODS12
+'
+bif.BODS.red.fit <- cfa(bif.BODS.red, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODS]) , idBODS], ordered = names(dBoth)[idBODS], orthogonal = T)
+fitMeasures(bif.BODS.red.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+# exclude items 3-4
+bif.BODS.red2 <- '
+BODS =~  BODS1 + BODS2 + BODS5 + BODS6 + BODS7 + BODS8 + BODS9 + BODS10 +                BODS11 + BODS12
+BODS_int =~ BODS1 + BODS5 + BODS7 + BODS9 + BODS11
+BODS_ext =~ BODS2 + BODS6 + BODS8 + BODS10 + BODS12
+BODS1 ~~ BODS2
+'
+bif.BODS.red2.fit <- cfa(bif.BODS.red2, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODS]) , idBODS], ordered = names(dBoth)[idBODS], orthogonal = T)
+fitMeasures(bif.BODS.red2.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+# EFA
+cor.pol.BODS <- polychoric(dBoth[, idBODS])
+alpha(cor.pol.BODS$rho) # polychoric Cronbach alpha
+psych::alpha(cor.pol.BODS$rho) # polychoric Cronbach alpha
+IRT.FA.BODS <- irt.fa(x = cor.pol.BODS, plot = TRUE, n.obs = nrow(dBoth[complete.cases(dBoth[, idBODS]),]), fm = "pa")
+IRT.FA.BODS
+fa.parallel(x = cor.pol.BODS$rho, plot = TRUE, n.obs = nrow(dBoth[complete.cases(dBoth[, idBODS]),]), cor = "poly", fa = "fa") # parallel suggests 5
+# Figure 2
+plot(IRT.FA.BODS$fa$e.values,
+pch = 19, lty = 6,
+ylab = "Eigenvalues", xlab = "Factors", main = "Scree Plot", xaxt='n')
+# Now, define a custom axis
+axis(side = 1, at = 1:length(idBODS))
+lines(IRT.FA.BODS$fa$e.values) # scree suggests either 1 or three, eigen suggests 3
+out.fa.BODS <- fa(r = cor.pol.BODS$rho, nfactors = 3, cor = "poly", n.obs = nrow(dBoth[complete.cases(dBoth[, idBODS]),]), fm = "pa", rotate = "oblimin")
+print(out.fa.BODS$loadings, cut = .4, sort = T) # items 1,3,5 have complex structure, and they load onto a third factor, let's remove them, along with their external counterparts
+# exclude items 3-4, 5-6, 11-12
+idBODSred <- idBODS[c(1,2,7,8,9,10)]
+cor.pol.BODS2 <- polychoric(dBoth[, idBODSred])
+IRT.FA.BODS2 <- irt.fa(x = cor.pol.BODS2, plot = TRUE, n.obs = nrow(dBoth[complete.cases(dBoth[, idBODSred]),]), fm = "pa")
+IRT.FA.BODS2
+fa.parallel(x = cor.pol.BODS2$rho, plot = TRUE, n.obs = nrow(dBoth[complete.cases(dBoth[, idBODSred]),]), cor = "poly", fa = "fa") # parallel suggests 4
+# Figure 2
+plot(IRT.FA.BODS2$fa$e.values,
+pch = 19, lty = 6,
+ylab = "Eigenvalues", xlab = "Factors", main = "Scree Plot", xaxt='n')
+# Now, define a custom axis
+axis(side = 1, at = 1:length(idBODSred))
+lines(IRT.FA.BODS2$fa$e.values) # scree suggests  1 or three, eigen suggests 1
+out.fa.BODS2 <- fa(r = cor.pol.BODS2$rho, nfactors = 1, cor = "poly", n.obs = nrow(dBoth[complete.cases(dBoth[, idBODSred]),]), fm = "pa", rotate = "oblimin")
+print(out.fa.BODS2$loadings, cut = .3) #
+uni.BODS.red2 <- '
+BODS =~  BODS1 + BODS2 + BODS7 + BODS8 + BODS9 + BODS10
+'
+uni.BODS.red2.fit <- cfa(uni.BODS.red2, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODSred]) , idBODSred], ordered = names(dBoth)[idBODSred])
+fitMeasures(uni.BODS.red2.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+modificationindices(uni.BODS.red2.fit, sort = T, minimum.value = 10)
+bid.BODS.red2 <- '
+BODS_int =~  BODS1 + BODS7 + BODS9
+BODS_ext =~  BODS2 + BODS8 + BODS10
+BODS1	~~	BODS2
+'
+bid.BODS.red2.fit <- cfa(bid.BODS.red2, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODSred]) , idBODSred], ordered = names(dBoth)[idBODSred])
+fitMeasures(bid.BODS.red2.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+modificationindices(bid.BODS.red2.fit, sort = T, minimum.value = 10)
+# let's stick to the EFA results
+idBODSred <- idBODS[c(1,2,7,8,9,10)]
+cor.pol.BODS2 <- polychoric(dBoth[, idBODSred])
+IRT.FA.BODS2 <- irt.fa(x = cor.pol.BODS2, plot = TRUE, n.obs = nrow(dBoth[complete.cases(dBoth[, idBODSred]),]), fm = "pa")
+IRT.FA.BODS2
+fa.parallel(x = cor.pol.BODS2$rho, plot = TRUE, n.obs = nrow(dBoth[complete.cases(dBoth[, idBODSred]),]), cor = "poly", fa = "fa") # parallel suggests 4
+# Figure 2
+plot(IRT.FA.BODS2$fa$e.values,
+pch = 19, lty = 6,
+ylab = "Eigenvalues", xlab = "Factors", main = "Scree Plot", xaxt='n')
+# Now, define a custom axis
+axis(side = 1, at = 1:length(idBODSred))
+lines(IRT.FA.BODS2$fa$e.values) # scree suggests  1 or three, eigen suggests 1
+# BODS IRT
+(dsc <- descript(dBoth[,idBODSred])) #excellent crobnbach alpha, all the variables seem to be associated
+model1 <- mirt.model('BODS = 1-6
+CONSTRAIN = (1-6, a1)')
+model2 <- mirt.model('BODS = 1-6')
+# Try different rasch models
+mirt1 <- mirt(dBoth[, idBODSred], model1, itemtype = "graded") #constrained GRM
+# estimate the unconstrained model
+mirt2 <- mirt(dBoth[, idBODSred], model2, itemtype = "graded") #
+(Table1 <- anova(mirt1,mirt2)) # 2PL wins
+coef(mirt2) # they have all good discr
+plot(mirt2)
+plot(mirt2, type= "rxx")
+plot(mirt1, type= "trace",
+which.items = c(4, 5, 6, 1, 2, 3))
+Theta <- fscores(mirt2, method = "EAP") #estimate thetas
+residuals(mirt2, type = 'Q3', Theta=Theta) # many values with abs > .20 (7-9-11)
+(above <- abs(residuals(mirt2, type = 'Q3', Theta=Theta)) > .2) # many values with abs > .20 (7-9-11))
+(above2 <- (residuals(mirt2, type = 'Q3', Theta=Theta)) > .2) # many values with abs > .20 (7-9-11))
+apply(above, 2, sum) -1 # identify the most problematic items
+apply(above2, 2, sum) - 1 # BODS 1 and 2 are problematic
+idBODSred2 <- idBODS[seq(2,10,2)]
+# try another solution: external without urine
+uni.BODS.red3 <- '
+BODS =~  BODS2 + BODS4 + BODS6 + BODS8  + BODS10
+'
+uni.BODS.red3.fit <- cfa(uni.BODS.red3, std.lv = T, data = dBoth[complete.cases(dBoth[, idBODSred2]) , idBODSred2], ordered = names(dBoth)[idBODSred2])
+fitMeasures(uni.BODS.red3.fit, fit.measures = c("cfi.scaled", "tli.scaled", "srmr","rmsea.scaled"), output = "matrix")
+modificationindices(uni.BODS.red3.fit, sort = T, minimum.value = 10)
+# IRT
+# BODS IRT
+(dsc2 <- descript(dBoth[,idBODSred2])) #excellent crobnbach alpha, all the variables seem to be associated
+model1red <- mirt.model('BODS = 1-5
+CONSTRAIN = (1-5, a1)')
+model2red <- mirt.model('BODS = 1-5')
+# Try different rasch models
+mirt1red <- mirt(dBoth[, idBODSred2], model1red, itemtype = "graded") #constrained GRM
+# estimate the unconstrained model
+mirt2red <- mirt(dBoth[, idBODSred2], model2red, itemtype = "graded") #
+(Table1 <- anova(mirt1red,mirt2red)) # 2PL wins
+coef(mirt2red) # they have all good discr
+plot(mirt2red)
+plot(mirt2red, type= "rxx")
+plot(mirt2red, type= "trace",
+which.items = c(3, 4, 5, 1, 2))
+Theta <- fscores(mirt2red, method = "EAP") #estimate thetas
+residuals(mirt2red, type = 'Q3', Theta=Theta) # many values with abs > .20 (7-9-11)
+(above <- abs(residuals(mirt2red, type = 'Q3', Theta=Theta)) > .2) # many values with abs > .20 (7-9-11))
+(above2 <- (residuals(mirt2red, type = 'Q3', Theta=Theta)) > .2) # many values with abs > .20 (7-9-11))
+apply(above, 2, sum) -1 # identify the most problematic items
+apply(above2, 2, sum) - 1 # BODS 1 and 2 are problematic
+dBoth$BODS_tot_long <- rowMeans(dBoth[, idBODS])
+dBoth$BODS_tot_short <- rowMeans(dBoth[, idBODSred2])
+dBoth$BODS_int <- rowMeans(dBoth[, idBODS[seq(1,12,2)]])
+dBoth$BODS_ext <- rowMeans(dBoth[, idBODS[seq(2,12,2)]])
+df <- dBoth[dBoth$residency!="Sweden" & dBoth$residency!="Italy", ]
+df <- droplevels(df)
+SEM1 <- '
+rwa =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+rwa3	~~	rwa5
+rwa1	~~	rwa4
+SDO =~ sdo1 + sdo2 + sdo3 + sdo4
+sdo1	~~	sdo3
+COVID =~  covid1 + covid2 + covid4 + covid5
+covid4 ~~ covid5
+#regression model
+COVID ~ rwa +  SDO
+#covariances
+rwa ~~ 1*rwa
+SDO ~~ 1*SDO
+COVID ~~ 1 * COVID
+'
+Sem1.fit <- lavaan::sem(SEM1, data = df, , meanstructure=TRUE, cluster="residency")
+summary(Sem1.fit, standardized = T)
+msem_model <- '
+COVID_lv =~ covid1 + covid2 + covid4 + covid5   #latent variable
+rwa_w =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+SDO_w =~ sdo1 + sdo2 + sdo3 + sdo4
+level: 1 #within cluster relationships
+COVID_lv ~ SDO + rwa      #regression
+level: 2 #between cluster relationships
+COVID_gruppo ~ SDO + rwa   #regression
+# Random effects
+SDO ~~ SDO
+rwa ~~ rwa
+SDO ~~ rwa    #covariances
+'
+msem_fit <- sem(msem_model, data = df, cluster = "residency")
+summary(msem_fit, fit.measures = TRUE, standardized = TRUE)
+model <- "
+# ---- Level 1: Within-person (individual level) ----
+# Measurement model for sdo, rwa, and covid
+sdo_w =~ sdo1 + sdo2 + sdo3 + sdo4
+rwa_w =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+covid_w =~ covid1 + covid2 + covid3 + covid4 + covid5
+covid_w ~ b1*sdo_w + b2*rwa_w  # Fixed effects at individual level
+# ---- Level 2: Between-group (residency level) ----
+# Structural model at residency level
+covid_w ~ sdo_w +rwa_w
+"
+# Fit the model
+fit <- sem(model, data = df, cluster = "residency", estimator = "MLR")
+summary(fit, standardized = TRUE)
+model_L1 <- "
+sdo_w =~ sdo1 + sdo2 + sdo3 + sdo4
+rwa_w =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+covid_w =~ covid1 + covid2 + covid3 + covid4 + covid5
+covid_w ~ b1*sdo_w + b2*rwa_w
+"
+fit_L1 <- sem(model_L1, data = df, cluster = "residency", estimator = "MLR")
+summary(fit_L1, standardized = TRUE)
+model_L2 <- "
+sdo_b =~ sdo1 + sdo2 + sdo3 + sdo4
+rwa_b =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+covid_b =~ covid1 + covid2 + covid3 + covid4 + covid5
+covid_b ~ gr1*sdo_b + gr2*rwa_b
+sdo_b ~~ var_sdo*sdo_b
+rwa_b ~~ var_rwa*rwa_b
+covid_b ~~ var_COVID*covid_b
+sdo_b ~~ cov_SR*rwa_b
+"
+fit_L2 <- sem(model_L2, data = df, cluster = "residency", estimator = "MLR")
+summary(fit_L2, standardized = TRUE)
+df <- df %>%
+group_by(residency) %>%
+mutate(across(starts_with("sdo"), mean, .names = "mean_{.col}"),
+across(starts_with("rwa"), mean, .names = "mean_{.col}"),
+across(starts_with("covid"), mean, .names = "mean_{.col}")) %>%
+ungroup()
+model3 <- "
+#  Level 1: Within
+sdo_w =~ sdo1 + sdo2 + sdo3 + sdo4
+rwa_w =~ rwa1 + rwa2 + rwa3 + rwa4 + rwa5
+covid_w =~ covid1 + covid2 + covid3 + covid4 + covid5
+covid_w ~ b1*sdo_w + b2*rwa_w
+#  Level 2: Between
+sdo_b =~ 1*mean_sdo1 + mean_sdo2 + mean_sdo3 + mean_sdo4
+rwa_b =~ 1*mean_rwa1 + mean_rwa2 + mean_rwa3 + mean_rwa4 + mean_rwa5
+covid_b =~ 1*mean_covid1 + mean_covid2 + mean_covid3 + mean_covid4 + mean_covid5
+covid_b ~ gr1*sdo_b + gr2*rwa_b
+# Variance components
+sdo_b ~~ var_sdo*sdo_b
+rwa_b ~~ var_rwa*rwa_b
+covid_b ~~ var_COVID*covid_b
+sdo_b ~~ cov_SR*rwa_b
+"
+fit_3 <- sem(model3, data = df, cluster = "residency", estimator = "MLR")
+summary(fit_3, standardized = TRUE)
+install.packages("remotes")
+install.packages("devtools")
+remotes::install_github("stan-dev/rstan", ref = "develop", subdir = "rstan/rstan")
+setwd("~/Library/CloudStorage/Dropbox/Causal Inference Psicostat")
+rm(list = ls())
+\begin{frame}{Test Logo}
+library(ggdag)
+library(ggplot2)
+library(dagitty)
+library(patchwork)
+# Definire il DAG
+dag1 <- dagitty("dag {
+Gelato[exposure]
+Annegamenti[outcome]
+Temperatura -> Gelato
+Temperatura -> Annegamenti
+Gelato -> Annegamenti
+}")
+rm(list = ls())  # Cancella tutti gli oggetti dall'ambiente
+gc()             # Libera memoria
+library(ggdag)
+library(ggplot2)
+library(dagitty)
+library(patchwork)
+# Definire il DAG
+dag1 <- dagitty("dag {
+Gelato[exposure]
+Annegamenti[outcome]
+Temperatura -> Gelato
+Temperatura -> Annegamenti
+Gelato -> Annegamenti
+}")
+install.packages(c("coda","mvtnorm","devtools","loo","dagitty","shape"))
+devtools::install_github("rmcelreath/rethinking")
+library(ggplot2)
+library(patchwork)
+library(ggdag)
+library(ggplot2)
+library(dagitty)
+library(patchwork)
+# Definire il DAG
+dag1 <- dagitty("dag {
+Gelato[exposure]
+Annegamenti[outcome]
+Temperatura -> Gelato
+Temperatura -> Annegamenti
+Gelato -> Annegamenti
+}")
+# Definire le coordinate per la visualizzazione
+coordinates(dag1) <- list(
+x = c(Gelato = 0, Temperatura = 1, Annegamenti = 2),
+y = c(Gelato = 0, Temperatura = -1, Annegamenti = 0)
+)
+rethinking::drawdag( dag1 )
+library(ggplot2)
+library(patchwork)
+par(mfrow=c(1,2))
+dag1<-dagify(Z~X,Y~Z,
+exposure = "X",
+outcome = "Y",
+labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente"))
+dag1<-ggdag(dag1, use_labels = "label", text = TRUE)
+dag2<-dagify(Z~X,Y~Z,
+exposure = "X",
+outcome = "Y",
+labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente"))
+dag2<-ggdag(dag2, use_labels = "label", text = TRUE)
+dag1 + dag2
+install.packages(c("coda","mvtnorm","devtools","loo","dagitty","shape"))
+devtools::install_github("rmcelreath/rethinking")
+install.packages(c("coda", "mvtnorm", "devtools", "loo", "dagitty", "shape"))
+install.packages(rethinking)
+devtools::install_github("rmcelreath/rethinking")
+install.packages(c("coda","mvtnorm","devtools","loo","dagitty","shape"))
+devtools::install_github("rmcelreath/rethinking")
+install.packages(c("coda", "mvtnorm", "devtools", "loo", "dagitty", "shape"))
+library(rethinking)
+devtools::install_github("rmcelreath/rethinking")
+library(ggplot2)
+library(patchwork)
+par(mfrow=c(1,2))
+dag1<-dagify(Z~X,Y~Z,
+exposure = "X",
+outcome = "Y",
+labels = c("X"="fattore di rischio","Y"="outcome","Z"="confondente"))
+library(ggdag)
+library(ggplot2)
+library(dagitty)
+library(patchwork)
+library(ggplot2)
+library(patchwork)
+# Definire il DAG
+dag1 <- dagitty("dag {
+Gelato[exposure]
+Annegamenti[outcome]
+Temperatura -> Gelato
+Temperatura -> Annegamenti
+Gelato -> Annegamenti
+}")
+# Definire le coordinate per la visualizzazione
+coordinates(dag1) <- list(
+x = c(Gelato = 0, Temperatura = 1, Annegamenti = 2),
+y = c(Gelato = 0, Temperatura = -1, Annegamenti = 0)
+)
+rethinking::drawdag( dag1 )
+devtools::install_github("rmcelreath/rethinking")
+# Definire il DAG
+dag1 <- dagitty("dag {
+Gelato[exposure]
+Annegamenti[outcome]
+Temperatura -> Gelato
+Temperatura -> Annegamenti
+Gelato -> Annegamenti
+}")
+# Definire le coordinate per la visualizzazione
+coordinates(dag1) <- list(
+x = c(Gelato = 0, Temperatura = 1, Annegamenti = 2),
+y = c(Gelato = 0, Temperatura = -1, Annegamenti = 0)
+)
+#rethinking::drawdag( dag1 )
