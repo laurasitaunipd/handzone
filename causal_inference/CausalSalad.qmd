@@ -1,0 +1,735 @@
+---
+title: "The unhealthy causal salad: \\newline causal inference, DAGs and propensity scores"
+format: 
+  beamer
+editor: visual
+header-includes:
+  - \usepackage{graphicx}
+  - \titlegraphic{\vspace{-2cm} \centering \includegraphics[width=0.4\textwidth]{logo.png}}
+  - \usepackage{graphicx}
+---
+
+# Causal salad
+
+Say No to the Causal Salad!
+
+![](ItalianSalad.jpg){fig-align="center"}
+
+<!-- # Predizione (e perdizione) -->
+
+<!-- Se il mio obiettivo è predire (in senso statistico) non importa fare assunzioni causali: più variabili ho meglio predico (*but beware of overfitting*) -->
+
+<!-- $y_i = \beta_0 + \sum_{j=1}^{p} \beta_j x_{ij} + e_i$ -->
+
+<!-- ![](overfitting.png){fig-align="center" width="254"} -->
+
+<!-- # Dalla predizione alla causazione -->
+
+<!-- $y_i = \beta_0 + \beta_1T_i + \beta_2x_i + e_i$ -->
+
+<!-- ![](pigeon.jpeg){fig-align="center" width="293"} -->
+
+# I tre criteri dell'inferenza causale
+
+-   Covariazione
+
+-   Precedenza temporale
+
+-   Esclusione di cause alternative
+
+![](pigeon.jpeg){fig-align="center" height="240"}
+
+<!-- # Controfattuali -->
+
+<!-- *Potential outcome framework: potential outcomes under alternative treatments* (Neyman e Rubin) -->
+
+<!-- -   Basato su ragionamento controfattuale (cosa sarebbe successo se mi avessero somministrato il farmaco X anziché quello Y?) -->
+
+<!--     ![Sliding Doors, 1998](Sliding_Doors.png){width="363"} -->
+
+<!-- # Average Treatment Effect -->
+
+<!-- -   Average Treatment Effect (ATE): $\widehat {ATE}={\frac {1}{N}}\sum _{i}(y_{1}(i)-y_{0}(i))$ -->
+
+<!-- -   Problema: l'*i*-esima osservazione non può al contempo essere assegnata al trattamento (1) o al controllo (0) -->
+
+<!-- -   Soluzione: $ATE = \mathbb{E}[y_1] - \mathbb{E}[Yy_0]$ -->
+
+<!-- -   Dove: -->
+
+<!--     -   $\mathbb{E}[y_1]$ è l'outcome atteso sotto trattamento nella popolazione -->
+
+<!--     -   $\mathbb{E}[y_0]$ è l'outcome atteso sotto controllo nella popolazione -->
+
+<!-- # Stima empirica dell'ATE -->
+
+<!-- In uno studio osservazionale, l'assegnazione al trattamento è rappresentata da una variabile binaria $(T_i)$, dove: -->
+
+<!-- $$ -->
+
+<!-- T_i = -->
+
+<!-- \begin{array}{ll} -->
+
+<!-- 1, & \text{se l'individuo riceve il trattamento} \\ -->
+
+<!-- 0, & \text{se l'individuo è nel gruppo di controllo} -->
+
+<!-- \end{array} -->
+
+<!-- $$ -->
+
+<!-- Osserviamo quindi: -->
+
+<!-- -   $\mathbb{E}[y \mid T=1] = \mathbb{E}[y_1 \mid T=1]$ -->
+
+<!-- -   $\mathbb{E}[y \mid T=0] = \mathbb{E}[y_0 \mid T=0]$ -->
+
+<!-- Se l'assegnazione fosse completamente casuale (cioè se ( $y_1$, $y_0$) ) fossero indipendenti da T), allora possiamo stimare l'ATE come: -->
+
+<!-- $ATE = \mathbb{E}[y \mid T=1] - \mathbb{E}[y \mid T=0]$ -->
+
+<!-- Tuttavia, in studi osservazionali, questa differenza potrebbe essere distorta dalla **selezione nel trattamento** -->
+
+# Think before you regress: Directed Acyclic Graphs (DAG)
+
+Introdotti da Judea Pearl, i **Directed Acyclic Graphs (DAG)** aiutano a ragionare sulla causalità
+
+-   *Directed:* le connessioni hanno frecce direzionali
+
+-   *Acyclic*: le cause non possono tornare indietro su se stesse
+
+-   *Graphs*: *nodi* e *connessioni*
+
+    -   I nodi possono essere genitori (*parents)* di un altro nodo figlio (*child*) se sono immediatamente antecedenti al nodo
+
+    -   Sono antenati (*ancestors*) se causano i genitori, oppure discendenti (*descendants*) se seguono causalmente i figli.
+
+# DAG e Structural Causal Models
+
+-   I DAG sono una rappresentazione grafica intuitiva di *Structural Causal Models* (SCM).
+
+-   Negli SCM abbiamo variabili:
+
+    -   *esogene* (U)*,* che non possono essere discendenti perché non spieghiamo da cosa siano causate
+
+    -   *endogene* (V),
+
+-   Nei DAG la freccia è usata quando si ipotizza una relazione *causale* ad es. da X a Y (X -\>Y).
+
+    -   La elazione bidirezionale (X \<-\> Y), equivale alla presenza du una variable non osservata - o latente - che causa entrambe (X \<- U -\> Y).
+
+-   Nei DAG possiamo rappresentare l'effetto di un insieme di variabili, chiamate *exposures* su altre variabili che chiameremo *outcomes*
+
+# DAG e ragionamento causale 1
+
+-   *Chains* (X -\> Z -\> Y)
+
+-   *Forks* (X \<- Z -\> Y)
+
+-   *Colliders* (X -\> Z \<- Y)
+
+    ```{r echo = F, out.width= "85%"}
+    library(dagitty)
+
+    # --- Set up 3-panel layout ---
+    par(mfrow = c(1, 3), mar = c(2, 2, 3, 2), cex = 2.5)  # 1 row, 3 columns
+
+    # --- 1. Chain DAG ---
+    dag_chain <- dagitty("dag { 
+                         X[exposure]
+                         Y[outcome]
+                         X -> Z
+                         Z -> Y
+                         }")
+    coordinates(dag_chain) <- list(
+      x = c(X = 0, Z = 1, Y = 2),
+      y = c(X = 0, Z = -1/2, Y = 0)
+    )
+    plot(dag_chain, main = "Chain: X → Z → Y")
+
+    # --- 2. Fork DAG ---
+    dag_fork <- dagitty("dag { 
+                         X[exposure]
+                         Y[outcome]
+                         Z -> X
+                         Z -> Y
+                         }")
+    coordinates(dag_fork) <- list(
+      x = c(X = 0, Z = 1, Y = 2),
+      y = c(X = 0, Z = -1/2, Y = 0)
+    )
+    plot(dag_fork, main = "Fork: Z → X, Z → Y")
+
+    # --- 3. Collider DAG ---
+    dag_collider <- dagitty("dag { 
+                         X[exposure]
+                         Y[outcome]
+                         X -> Z
+                         Y -> Z
+                         }")
+    coordinates(dag_collider) <- list(
+      x = c(X = 0, Z = 1, Y = 2),
+      y = c(X = 0, Z = -1/2, Y = 0)
+    )
+    plot(dag_collider, main = "Collider: X → Z ← Y")
+
+    ```
+
+# DAG e ragionamento causale 2
+
+-   Nelle *chains* e nelle *forks*, controllare per *Z* **blocca** il percorso (*path*) introducendo un*'indipendenza condizionata t*ra X e Y: $X \perp\ Y \mid Z$
+
+-   Nei *collider*, controllare per Z **apre** il percorso (*path*) introducendo una dipendenza condizionata tra X e Y: $X \not \perp \mid Z$
+
+-   La *d*-*separation* di due variabili si ha quando, attraverso una covariata, si blocca ogni percorso (*path*) tra loro. Viceversa, si ha la *d*-*connection*.
+
+    Questi concetti sono importanti per DAG con più variabili. Ad esempio, controllare per un discendente di un collisore rischia di creare una *d*-connection tra variabili che prima erano *d*-separated.
+
+# Struttura dei DAG
+
+```{r packages_1, echo = FALSE, warning = FALSE, message = FALSE}
+
+library(ggdag)
+
+library(ggplot2)
+
+library(dagitty)
+
+library(patchwork)
+
+```
+
+```{r dag1, echo = FALSE}
+# Definire il DAG
+dag1 <- dagitty("dag {
+  Gelato[exposure]
+  Annegamenti[outcome]
+  
+  Temperatura -> Gelato
+  Temperatura -> Annegamenti
+  Gelato -> Annegamenti
+}")
+
+# Definire le coordinate per la visualizzazione
+coordinates(dag1) <- list(
+  x = c(Gelato = 0, Temperatura = 1, Annegamenti = 2),
+  y = c(Gelato = 0, Temperatura = -1, Annegamenti = 0)
+)
+
+plot( dag1 )
+```
+
+# Variabili confondenti
+
+Vanno sempre controllate
+
+```{r confondente1, echo = FALSE}
+# Definire il DAG
+dagQI <- dagitty("dag {
+  Allattamento[exposure]
+  QIfiglio[outcome]
+
+  QImaterno -> QIfiglio
+  QImaterno -> Allattamento
+  Allattamento -> QIfiglio
+}")
+
+# Definire le coordinate per la visualizzazione
+coordinates(dagQI) <- list(
+  x = c(Allattamento = 0, QImaterno = 1, QIfiglio = 2),
+  y = c(Allattamento = 0, QImaterno = -1, QIfiglio = 0)
+)
+
+plot( dagQI )
+```
+
+# Variabili mediatrici 1
+
+-   **vanno controllate se ci interessa l'effetto diretto**
+-   non vanno controllate se ci interessa l'effetto totale
+
+Esempio: *Simpson's paradox* sui dati di Berkley del 1979
+
+```{r mediatorediretto, echo = FALSE, out.width= "75%"}
+dag_berkeley <- dagitty("dag {
+  Gender[exposure]
+  Admission[outcome]
+  
+  Gender -> Department
+  Department -> Admission
+}")
+
+# Impostare le coordinate per una visualizzazione chiara
+coordinates(dag_berkeley) <- list(
+  x = c(Gender = 0, Department = 1, Admission = 2),
+  y = c(Gender = 1, Department = -1, Admission = 1)
+)
+
+# Visualizzare il DAG con drawdag() di rethinking
+plot(dag_berkeley)
+```
+
+# Variabili mediatrici 2
+
+-   vanno controllate se ci interessa l'effetto diretto
+-   **non vanno controllate se ci interessa l'effetto totale**
+
+```{r mediatoreindiretto, echo = FALSE, out.width="80%"}
+# Definire il DAG per l'effetto dello stress sull'ansia
+dag_stress <- dagitty("dag {
+  Stress -> Rumination
+  Rumination -> Anxiety
+}")
+
+# Impostare le coordinate per una visualizzazione chiara
+coordinates(dag_stress) <- list(
+  x = c(Stress = 0, Rumination = 1, Anxiety = 2),
+  y = c(Stress = 1, Rumination = -1, Anxiety = 1)
+)
+
+# Visualizzare il DAG con drawdag()
+plot(dag_stress)
+
+```
+
+# Collider
+
+-   Quando una variabile è causata da due variabili tra loro non correlate , si crea un *collider bias* che crea una dipendenza condizionata tra le variabili.
+
+-   Detto anche *Berkson's paradox*, si osserva spesso quando si introducono bias di selezione
+
+```{r, echo = FALSE, out.width = "75%"}
+library(ggplot2)
+library(dplyr)
+
+set.seed(42)  # Per riproducibilità
+
+# Numero di osservazioni ridotto
+N <- 500
+
+# Simuliamo coscienziosità e intelligenza come variabili indipendenti
+coscienziosita <- rnorm(N, mean = 0, sd = 1)
+intelligenza <- rnorm(N, mean = 0, sd = 1)
+
+# L'ammissione dipende dalla somma di coscienziosità e intelligenza (forte selezione)
+p_ammissione <- plogis(3 * (coscienziosita + intelligenza - 0.5))  # funzione logistica più estrema
+ammissione <- rbinom(N, 1, p_ammissione)  # 1 = ammesso, 0 = non ammesso
+
+# Creiamo un data frame
+dati <- data.frame(coscienziosita, intelligenza, ammissione)
+
+# Calcoliamo la correlazione nei due gruppi
+cor_ammessi <- cor(dati$coscienziosita[dati$ammissione == 1], 
+                   dati$intelligenza[dati$ammissione == 1])
+
+cor_non_ammessi <- cor(dati$coscienziosita[dati$ammissione == 0], 
+                       dati$intelligenza[dati$ammissione == 0])
+
+# Grafico con linee di regressione e correlazioni
+ggplot(dati, aes(x = coscienziosita, y = intelligenza, color = as.factor(ammissione))) +
+  geom_point(alpha = 0.6) +
+  
+  # Linea di regressione unica (su tutti i dati, senza condizionare)
+  geom_smooth(method = "lm", color = "black", se = FALSE, linetype = "dashed") +
+  
+  # Linee di regressione separate per gli ammessi e non ammessi
+  geom_smooth(method = "lm", se = FALSE) +
+  
+  # Testo con i coefficienti di correlazione
+  annotate("text", x = 0, y = 4, label = paste0("Ammessi: ", round(cor_ammessi, 2)), color = "blue", size = 5) +
+  annotate("text", x = 0, y = -4, label = paste0("Non Ammessi: ", round(cor_non_ammessi, 2)), color = "red", size = 5) +
+  
+  theme_minimal() +
+  scale_color_manual(values = c("red", "blue"), labels = c("Non ammessi", "Ammessi")) +
+  
+  labs(
+    title = "Bias del Collider: Coscienziosità vs Intelligenza",
+    subtitle = "Le linee colorate sono condizionate all'ammissione, la linea nera è generale",
+    color = "Ammissione",
+    x = "Coscienziosità",
+    y = "Intelligenza"
+  )
+```
+
+# Collider con i DAG
+
+```{r berkson, echo = FALSE, out.width="80%"}
+# Definire il DAG per il Paradosso di Berkson
+dag_berkson <- dagitty("dag {
+  Intelligence -> Admission
+  Conscientiousness -> Admission
+}")
+
+# Impostare le coordinate per una visualizzazione chiara
+coordinates(dag_berkson) <- list(
+  x = c(Intelligence = 0, Conscientiousness = 2, Admission = 1),
+  y = c(Intelligence = 1, Conscientiousness = 1, Admission = 0)
+)
+
+# Visualizzare il DAG con drawdag()
+plot(dag_berkson)
+```
+
+# Riicapitoliamo: in possibili bias nella stima
+
+![Del Giudice e Gangestead, 2021, SM](DelGiudice_1.png){fig-align="left" width="290"}
+
+# Un esempio: scegliere un gruppo di controllo
+
+-   Studio su donne con iperplasia surrenale congenita (CAH) e sociosessualità promiscua
+
+    -   Per qulai variabili appaiare i controlli? Primi candidati: età, livello di istruzione, orientamento politico, religiosità, status relazionale...ma ha senso questa insalata causale?
+
+```{r echo = F, out.width="75%"}
+dagCAH1 <- dagitty('dag {
+"Età" [pos="-1.648,-0.915"]
+"Orientamento Politico" [pos="0.337,-0.898"]
+"Religiosità" [pos="-0.342,0.139"]
+"Sociosessualità" [outcome,pos="0.327,1.470"]
+"Status relazionale" [pos="0.896,0.209"]
+CAH [exposure,pos="-1.876,0.126"]
+Istruzione [pos="-1.657,1.447"]
+"Età" -> "Orientamento Politico"
+"Età" -> "Religiosità"
+"Età" -> "Sociosessualità"
+"Età" -> Istruzione
+"Religiosità" -> "Orientamento Politico"
+"Religiosità" -> "Sociosessualità"
+"Sociosessualità" -> "Orientamento Politico"
+"Sociosessualità" -> "Status relazionale"
+CAH -> "Orientamento Politico"
+CAH -> "Religiosità"
+CAH -> "Sociosessualità"
+Istruzione -> "Religiosità"
+Istruzione -> "Sociosessualità"
+}
+')
+
+plot(dagCAH1)
+```
+
+# Andare su DAGitty.net
+
+<https://dagitty.net/dags.html?id=EP9fXebg>
+
+![](Studio%20CAH.png){fig-align="left" width="450"}
+
+<!-- # DAGitty 1 -->
+
+<!-- L'esempio delle punizioni corporali \small -->
+
+<!-- ```{r dagitty1, echo = TRUE, out.width="65%", size = 'small'} -->
+
+<!-- library(dagitty) -->
+
+<!-- dagitty1 <- dagitty('dag{ -->
+
+<!--   "punizione corporale"[exposure]  -->
+
+<!--   aggressivita[label="Aggressività", outcome] -->
+
+<!--   geni[label = "Geni"] -->
+
+<!--   "punizione corporale" -> aggressivita -->
+
+<!--   geni -> aggressivita -->
+
+<!--   geni -> "punizione corporale" -->
+
+<!-- }') -->
+
+<!-- # Assegnazione delle coordinate manuali -->
+
+<!-- coordinates(dagitty1) <- list( -->
+
+<!--   x = c("punizione corporale" = 0, geni = 0.5, aggressivita = 1), -->
+
+<!--   y = c("punizione corporale" = 0, geni = 1, aggressivita = 0) -->
+
+<!-- ) -->
+
+<!-- ``` -->
+
+<!-- # DAGitty 2 -->
+
+<!-- ```{r echo = F} -->
+
+<!-- library(ggdag) -->
+
+<!-- ggdag(dagitty1, text = TRUE) +  -->
+
+<!--   ggtitle("DAG: Punizione corporale e Aggressività") + -->
+
+<!--   theme( -->
+
+<!--     plot.title = element_text(size = 18, face = "bold"), -->
+
+<!--     text = element_text(size = 14),  # Ingrandisce tutto il testo -->
+
+<!--     legend.text = element_text(size = 12), -->
+
+<!--     axis.text = element_blank(), -->
+
+<!--     axis.ticks = element_blank(), -->
+
+<!--     panel.grid = element_blank() -->
+
+<!--   ) -->
+
+<!-- ``` -->
+
+# DAG con ggdag() 1
+
+```{r packages, echo = FALSE, warning = FALSE, message = FALSE}
+
+library(ggplot2)
+library(dagitty)
+library(ggdag)
+library(patchwork)
+
+```
+
+```{r daginizio1, include = TRUE, echo = TRUE, fig.align='center', out.width="60%"}
+dag1<-dagify(Y~X,
+
+            exposure = "X",
+
+            outcome = "Y",
+
+            labels = c("X"="fattore di rischio",
+                       "Y"="outcome"))
+            
+dag1<-ggdag(dag1, use_labels = "label", text = TRUE)
+```
+
+# DAG con ggdag (1)
+
+```{r daginizio11, echo=FALSE, message = FALSE, fig.align='center'}
+dag1
+```
+
+# DAG con ggdag (2)
+
+```{r daginizio2, echo=FALSE, fig.align='center'}
+dag2<-dagify(M~X,Y~M,
+             exposure = "X",
+              outcome = "Y", labels = c("X"="numero di figli","Y"="stress genitoriale","M"="coesione familiare"))
+ggdag(dag2,use_labels = "label", text = TRUE)
+```
+
+# DAG con ggdag (3)
+
+```{r dag3, echo = FALSE, fig.align='center'}
+#par(mfrow=c(1,2))
+dag3<-dagify(M~X,Y~M,M~W,Y~W,
+             exposure = "X",
+              outcome = "Y",
+             labels = c("X"="trattamento","Y"="outcome","M"="mediatore","W"="variabile nascosta"))
+ggdag(dag3,use_labels = "label", text = TRUE)
+
+#dag4<-dagify(Z~X,Y~Z,Z~W,Y~W, exposure = "X", outcome = "Y", labels = c("X"="trattamento X","Y"="outcome Y","Z"="mediatore Z","W"="variabile nascosta W")) 
+#dag4<-ggdag(dag4,use_labels = "label", text = TRUE)
+#ggdag_adjust(dag4, var = "Z",use_labels = "label")
+
+# dag3 + dag4
+
+```
+
+# DAG con ggdag (3)
+
+```{r dag3.1,include=FALSE, fig.align='center'}
+dag4<-dagify(M~X,Y~M,M~W,Y~W,
+             exposure = "X",
+              outcome = "Y",
+             labels = c("X"="trattamento","Y"="outcome","M"="mediatore","W"="variabile nascosta"))
+ggdag(dag4,use_labels = "label", text = TRUE)
+
+```
+
+```{r dag3.2,echo=FALSE, fig.align='center'}
+ggdag_adjust(dag4, var = "M",use_labels = "label")
+```
+
+# DAG con ggdag (4)
+
+Influenza dello **status vaccinale** sull'**adesione alle misure di prevenzione contro la diffusione del COVID-19** controllando l'effetto di **possibili confounder**
+
+```{r dag4, include = FALSE, fig.align='center'}
+
+dag4<-dagify(Y~X,X~Z,Y~Z,
+             exposure = "X",
+             outcome = "Y", 
+             latent = "Z",
+             labels = c("X"="vaccino","Y"="aderenza alle misure di prevenzione","Z"="confounders"))
+
+ggdag(dag4,use_labels = "label", text = TRUE)
+
+```
+
+```{r dag4.1, echo = FALSE, out.width="90%", fig.align='center'}
+ggdag_adjust(dag4, var = "Z",use_labels = "label",text = TRUE)
+```
+
+# DAG con ggdag (5)
+
+Effetto del **fumo** sul **decadimento cognitivo** controllando per **stile di vita e fattori economico-sociali**
+
+```{r dag5, include = FALSE, fig.align='center'}
+
+dag5<-dagify(Y~X,X~Z,Y~Z,
+             exposure = "X",
+             outcome = "Y", 
+             latent = "Z",
+             labels = c("X"="smoking","Y"="differenza dei punteggi in 'fluency'","Z"="stile di vita e fattori economico-sociali"))
+
+ggdag(dag5,use_labels = "label", text = TRUE)
+
+```
+
+```{r dag5.1, echo = FALSE, out.width="90%", fig.align='center'}
+ggdag_adjust(dag5, var = "Z",use_labels = "label",text = TRUE)
+```
+
+# Studi quasi sperimentali (1)
+
+**Disegno quasi sperimentale**: ricreare una condizione che si avvicini il più possibile alla randomizzazione
+
+\vspace{0.5cm}
+
+Possibile tramite **metodi di aggiustamento delle variabili confondenti**
+
+1.  aggiustamento additivo
+
+2.  tecniche di bilanciamento (es. basate sul propensity score)
+
+# Studi quasi sperimentali (2)
+
+### 1) Aggiustamento additivo
+
+Addizione delle covariate all'interno, ad esempio, di un modello di regressione lineare
+
+$$Y_i=\beta_{0}+\beta _{1} X_{1i}+\beta _{2} X_{2i}\ldots+\beta _{k} X_{ki}+\epsilon_i$$
+
+# Studi quasi sperimentali (3)
+
+### 2) Tecniche basate sul propensity score
+
+Il **propensity score**
+
+-   esprime la probabilità che ogni individuo ha di ricevere il trattamento, sulla base del profilo di covariate che presenta
+-   si basa sull'**assunto di ignorabilità forte**
+-   viene prima stimato e poi applicato al modello dello studio
+
+# Studi quasi sperimentali (4)
+
+### 2) Tecniche basate sul propensity score: stima
+
+Stima del propensity score può avvenire in più modi (parametrici e non parametrici)
+
+\vspace{0.5cm}
+
+Un esempio di metodo parametrico è la **regressione logistica multipla**
+
+$$\pi_i=Pr(Y=1|X=x_i)=\lambda(\beta_{0}+\beta _{1} X_{1i}+\beta _{2} X_{2i}\ldots+\beta _{k} X_{ki})$$
+
+# Studi quasi sperimentali (5)
+
+### 2) Tecniche basate sul propensity score: applicazione
+
+Un possibile metodo di applicazione è l'***inverse probability of treatment weights*** (**IPTW**)
+
+\vspace{0.5cm}
+
+Ad ogni individuo si associa un peso:
+
+-   peso dato agli individi trattati $IPTW ={1/\rho_i}$
+
+-   peso dato agli individui di controllo $IPTW = {1/(1-\rho_i)}$
+
+# Studio d'esempio (1)
+
+Studio riguardo l'effetto del fumo di sigaretta sul decadimento cognitivo
+
+-   X = essere fumatore alla baseline
+
+-   Y = differenza nei punteggi di fluenza verbale nel corso di 10 anni
+
+-   confounder = variabili suggerite dall'APA + ... ?
+
+\vspace{0.25cm}
+
+Dati ottenuti dal database europeo SHARE relativi a soggetti italiani
+
+-   campione N = 33'525
+
+-   individui maschili N = 14'675
+
+-   individui femminili N= 18'850
+
+# Studio d'esempio (2)
+
+I modelli di regressione che intendiamo confrontare sono corretti
+
+1.  con **aggiustamento additivo** delle covariate
+2.  con **aggiustamento additivo** delle covariate + aggiustamento tramite **propensity score** (applicando il metodo IPTW)
+
+# Studio d'esempio (3)
+
+Rispettivamente, i risultati dei due modelli riportano che
+
+1.  l'effetto del fumo sul decadimento cognitivo **non è significativo**
+2.  l'effetto del fumo sul decadimento cognitivo **è significativo**
+
+\vspace{0.5cm}
+
+Possibile spiegazione della differenza nel **bias di selezione**: i fumatori tendono ad evitare le survey
+
+# Studio d'esempio (4)
+
+Applicazione della correzione tramite propensity score:
+
+-   miglior riduzione di bias rispetto all'aggiustamento additivo da solo
+-   risultati in linea con la letteratura
+
+**Limiti dello studio** (e dell'utilizzo di tecniche di aggiustamento in generale):
+
+-   assunto di ignorabilità forte
+
+# Take-home messages
+
+Evitare causal salads
+
+![](Saladfinale.jpg){fig-align="center" width="202"}
+
+*Thinking before regressing*: riportare anche i DAG !
+
+\vspace{0.25cm}
+
+Per una miglior causal inference
+
+-   aggiustamento additivo con campioni grandi
+
+-   tecniche di bilanciamento con campioni piccoli e tante covariate
+
+# Bibliografia
+
+Del Giudice, M., & Gangestad, S. W. (2021). A traveler’s guide to the multiverse: Promises, pitfalls, and a framework for the evaluation of analytic decisions. *Advances in Methods and Practices in Psychological Science, 4,* 1-15.
+
+Harder, V. S., Stuart, E. A., & Anthony, J. C. (2010). Propensity score techniques and the assessment of measured covariate balance to test causal associations in psychological research. *Psychological methods*, *15*(3), 234.
+
+Rohrer, J. M. (2018). Thinking clearly about correlations and causation: Graphical causal models for observational data. *Advances in methods and practices in psychological science*, *1*(1), 27-42.
+
+Sità, L., Caserotti, M., Zamparini, M., Lotto, L., de Girolamo, G., & Girardi, P. (2024). Impact of COVID-19 vaccination on preventive behavior: The importance of confounder adjustment in observational studies. *PloS one*, *19*(11), e0313117.
+
+# Appendice (1)
+
+Confronto dell'aggiustamento additivo con e senza correzione tramite propensity score
+
+![](appendice1.png)
+
+# Appendice (2)
+
+Confronto dell'aggiustamento additivo con e senza correzione tramite propensity score
+
+![](appendice2.png)
