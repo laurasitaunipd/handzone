@@ -1,12 +1,14 @@
 ---
-title: "The unhealthy causal salad: \\newline causal inference, DAGs and propensity scores"
+title: "The unhealthy causal salad: causal inference, DAGs and propensity scores"
+author: 
+  - M. T. Liuzza
+  - L. Sità
+institute: "Handzone – 27 marzo 2025"
 format: 
-  beamer
-editor: visual
+  beamer:
+    latex-engine: xelatex
 header-includes:
-  - \usepackage{graphicx}
-  - \titlegraphic{\vspace{-2cm} \centering \includegraphics[width=0.4\textwidth]{logo.png}}
-  - \usepackage{graphicx}
+  - \titlegraphic{\vspace{-1cm}\includegraphics[width=0.4\textwidth]{logo.png}}
 ---
 
 # Causal salad
