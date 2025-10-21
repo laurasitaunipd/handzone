@@ -1,0 +1,101 @@
+---
+title: ""
+format: 
+  beamer:
+    theme: Berlin
+    colortheme: beaver
+    fonttheme: structurebold
+    latex-engine: xelatex
+    number-sections: false
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{ragged2e}
+  - \usepackage{setspace}\singlespacing
+  - \usepackage[dvipsnames]{xcolor}
+  - \usepackage{fontspec}
+  - \setmainfont{Times New Roman}
+  - \setsansfont{Arial}
+  - \setmonofont{Courier New}
+  - \renewcommand{\normalsize}{\fontsize{14}{16}\selectfont}
+  - \renewcommand{\Large}{\fontsize{16}{18}\selectfont}
+  - \renewcommand{\LARGE}{\fontsize{18}{20}\selectfont}
+  - \setbeamertemplate{footline}[frame number]
+  - \setbeamertemplate{navigation symbols}{}
+  - \makeatletter
+  - \setbeamercolor{frametitle}{bg=white, fg=BrickRed}
+  - \setbeamertemplate{frametitle}{
+      \vspace{0.2cm}
+      \begin{beamercolorbox}[sep=0.2cm, leftskip=0.5cm, wd=\paperwidth]{frametitle}
+        \usebeamerfont{frametitle}\insertframetitle
+      \end{beamercolorbox}
+    }
+  - \makeatother
+  - \usepackage{hyperref}
+  - \hypersetup{
+      colorlinks=true,
+      linkcolor=blue,
+      urlcolor=blue,
+      citecolor=blue,
+      filecolor=blue
+    }
+  - \let\oldhref\href
+  - \renewcommand{\href}[2]{\textcolor{blue}{\oldhref{#1}{#2}}}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(knitr)
+```
+
+\vspace*{0.2cm}
+
+:::::: columns
+::: {.column width="25%"}
+```{r logo_unipd, out.width="100%"}
+#include_graphics("images/logo.png")
+```
+:::
+
+::: {.column width="50%"}
+\vspace*{1.2cm}
+\centering
+\small \textbf{Department of General Psychology}
+:::
+
+
+::: {.column width="25%"}
+\vspace*{0.3cm}
+```{r logo_tue, out.width="90%"}
+#include_graphics("images/tue2.png")
+```
+:::
+::::::
+
+\vspace{0.2cm}
+
+\begin{center}
+\Large
+\textbf{Improving the Interpretation of Effect Sizes} \par
+\textbf{through Modeling and Simulation}
+\end{center}
+
+\vspace{0.5cm}
+
+::: {.columns}
+::: {.column width="60%"}
+\raggedright
+\small
+Supervisor: Professor Gianmarco Altoè
+Co-supervisor: Professor Daniël Lakens
+:::
+
+::: {.column width="40%"}
+\vspace*{1cm}
+
+\raggedleft
+\small
+Candidate: Laura Sità
+:::
+:::
+
