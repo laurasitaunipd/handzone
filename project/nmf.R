@@ -68,7 +68,7 @@ for (i in 1:N) {
   M[,i] <- rpois(D, lambda = true_P %*% true_C[,i])
 }
 
-View(M)
+#View(M)
 
 # B) STIME DI TRUE_P(LAMBDA) E TRUE_C(L)
 

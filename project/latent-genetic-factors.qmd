@@ -7,6 +7,7 @@ format:
     fonttheme: structurebold
     latex-engine: xelatex
     number-sections: false
+    include-in-header: text.tex
 header-includes:
   - \usepackage{graphicx}
   - \usepackage{ragged2e}
@@ -36,7 +37,8 @@ header-includes:
       linkcolor=blue,
       urlcolor=blue,
       citecolor=blue,
-      filecolor=blue
+      filecolor=blue,
+      pdfnewwindow=true
     }
   - \let\oldhref\href
   - \renewcommand{\href}[2]{\textcolor{blue}{\oldhref{#1}{#2}}}
@@ -46,58 +48,61 @@ header-includes:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(knitr)
+library(ggridges)
+library(ggplot2)
 ```
 
-\vspace*{0.2cm}
-
-:::::: columns
-::: {.column width="25%"}
-```{r logo-psicostat, out.width="100%", fig.align='center'}
+```{r logo-psicostat, out.width="20%", fig.align='center'}
 include_graphics("images/logo.png")
 ```
-:::
-
-::: {.column width="50%"}
-\vspace*{1.2cm}
-\centering
-\small \textbf{Department of General Psychology}
-:::
-
-
-::: {.column width="25%"}
-\vspace*{0.3cm}
-```{r logo_tue, out.width="90%"}
-#include_graphics("images/tue2.png")
-```
-:::
-::::::
-
-\vspace{0.2cm}
 
 \begin{center}
 \Large
-\textbf{Improving the Interpretation of Effect Sizes} \par
-\textbf{through Modeling and Simulation}
+\textbf{Causal Inference for Latent Genetic Factors} \par
+\textbf{Underlying Psychopathology}
 \end{center}
 
-\vspace{0.5cm}
+\vspace{0.15cm}
 
-::: {.columns}
-::: {.column width="60%"}
-\raggedright
-\small
-Supervisor: Professor Gianmarco Altoè
-Co-supervisor: Professor Daniël Lakens
-:::
+\centering
+\small Laura Sità
 
-::: {.column width="40%"}
-\vspace*{1cm}
+\vspace{1cm}
+\flushleft
+\small \textbf{HandZone October 30th, 2025}
 
-\raggedleft
-\small
-Candidate: Laura Sità
-:::
-:::
+
+# Boh
+
+```{r nmf}
+#| echo: false
+source("nmf.R")
+```
+
+```{r grafico}
+#| echo: false
+
+plotxslide <- ggplot(df, aes(x = C, y = as.factor(k), fill = Tr)) +
+  geom_density_ridges(alpha = 0.6) +
+  theme_bw(base_size = 18) +
+  labs(
+    x = "Latent outcome distribution", 
+    y = "Latent dimension",
+    fill = "Group"
+  ) +
+  theme(
+    axis.title.x = element_text(size = 22, margin = margin(t = 20)),
+    axis.title.y = element_text(size = 22, margin = margin(r = 20)),
+    axis.text = element_text(size = 20),
+    legend.title = element_text(size = 29),
+    legend.text = element_text(size = 22),
+    plot.title = element_text(size = 24, face = "bold", hjust = 0.5),
+    axis.text.y = element_text(margin = margin(r = 13))
+  )
+
+plotxslide
+
+```
 
 # Materials 
-tutto il materiale è disponibile nella cartella `project` della repo  [laurasitaunipd/handzone.git](https://github.com/laurasitaunipd/handzone.git)
+tutto il materiale è disponibile nella cartella `project` della repo \href{https://github.com/laurasitaunipd/handzone.git}{laurasitaunipd/handzone}
