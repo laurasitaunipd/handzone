@@ -1,4 +1,4 @@
-# HandZone Presentations
+<div align="justify">
 
 This repository contains materials from two presentations I gave during the HandZone workshops, a series of one-hour sessions on statistical methods and real-data analysis, held twice a month. The workshops are organized by the PsicoStat research group and are open to researchers and faculty from the School of Psychology at the University of Padua.
 
@@ -25,6 +25,6 @@ This presentation applies causal inference methods to estimate how latent geneti
 - `causal-inference/`: Materials related to the March 2025 presentation (PDF format).
 - `project/`: Materials for the October 2025 presentation (HTML slides generated via Quarto Reveal.js).
 
----
+</div>
 
 
