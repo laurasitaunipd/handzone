@@ -1,49 +1,50 @@
 ---
-title: ""
-format: 
-  beamer:
-    theme: Berlin
-    colortheme: beaver
-    fonttheme: structurebold
-    latex-engine: xelatex
-    number-sections: false
-    include-in-header: text.tex
-header-includes:
-  - \usepackage{graphicx}
-  - \usepackage{ragged2e}
-  - \usepackage{setspace}\singlespacing
-  - \usepackage[dvipsnames]{xcolor}
-  - \usepackage{fontspec}
-  - \setmainfont{Times New Roman}
-  - \setsansfont{Arial}
-  - \setmonofont{Courier New}
-  - \renewcommand{\normalsize}{\fontsize{14}{16}\selectfont}
-  - \renewcommand{\Large}{\fontsize{16}{18}\selectfont}
-  - \renewcommand{\LARGE}{\fontsize{18}{20}\selectfont}
-  - \setbeamertemplate{footline}[frame number]
-  - \setbeamertemplate{navigation symbols}{}
-  - \makeatletter
-  - \setbeamercolor{frametitle}{bg=white, fg=BrickRed}
-  - \setbeamertemplate{frametitle}{
-      \vspace{0.2cm}
-      \begin{beamercolorbox}[sep=0.2cm, leftskip=0.5cm, wd=\paperwidth]{frametitle}
-        \usebeamerfont{frametitle}\insertframetitle
-      \end{beamercolorbox}
-    }
-  - \makeatother
-  - \usepackage{hyperref}
-  - \hypersetup{
-      colorlinks=true,
-      linkcolor=blue,
-      urlcolor=blue,
-      citecolor=blue,
-      filecolor=blue,
-      pdfnewwindow=true
-    }
-  - \let\oldhref\href
-  - \renewcommand{\href}[2]{\textcolor{blue}{\oldhref{#1}{#2}}}
----
+title: "Causal Inference for Latent Genetic Factors<br> Underlying Psychopathology"
+authors: "Laura Sità"
+format:
+  revealjs:
+    center: true
+    embed-resources: true
+    slide-number: true
+    footer: "HandZone October 30th, 2025"
+    theme: simple
+    output-file: "latent-genetic-factors.html"
+toc: false
+execute:
+  cache: false
+  freeze: false
+include-in-header:
+  - text: |
+      <style>
+      /* Titolo slide di copertina */
+      #title-slide .title {
+        font-size: 1.5em;
+        color: #900000;
+      }
 
+      /* Logo nella copertina */
+      #title-slide::after {
+        content: "";
+        display: block;
+        background-image: url("images/logo.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        height: 150px;
+        margin-top: 1.5em;
+      }
+
+      /* Titoli interni delle slide */
+      .reveal h1, .reveal h2, .reveal h3 {
+        color: #900000 !important;
+      }
+
+      /* Eventuale dimensione leggermente minore per h2 */
+      .reveal h2 {
+        font-size: 1.2em !important;
+      }
+      </style>
+---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -51,26 +52,6 @@ library(knitr)
 library(ggridges)
 library(ggplot2)
 ```
-
-```{r logo-psicostat, out.width="20%", fig.align='center'}
-include_graphics("images/logo.png")
-```
-
-\begin{center}
-\Large
-\textbf{Causal Inference for Latent Genetic Factors} \par
-\textbf{Underlying Psychopathology}
-\end{center}
-
-\vspace{0.15cm}
-
-\centering
-\small Laura Sità
-
-\vspace{1cm}
-\flushleft
-\small \textbf{HandZone October 30th, 2025}
-
 
 # Boh
 
@@ -105,4 +86,4 @@ plotxslide
 ```
 
 # Materials 
-tutto il materiale è disponibile nella cartella `project` della repo \href{https://github.com/laurasitaunipd/handzone.git}{laurasitaunipd/handzone}
+Tutto il materiale è disponibile nella cartella `project` della repo <a href="https://github.com/laurasitaunipd/handzone.git" target="_blank">laurasitaunipd/handzone</a>.
