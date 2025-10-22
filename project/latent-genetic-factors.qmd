@@ -52,8 +52,8 @@ library(knitr)
 
 :::::: columns
 ::: {.column width="25%"}
-```{r logo_unipd, out.width="100%"}
-#include_graphics("images/logo.png")
+```{r logo-psicostat, out.width="100%", fig.align='center'}
+include_graphics("images/logo.png")
 ```
 :::
 
@@ -99,3 +99,5 @@ Candidate: Laura Sità
 :::
 :::
 
+# Materials 
+tutto il materiale è disponibile nella cartella `project` della repo  [laurasitaunipd/handzone.git](https://github.com/laurasitaunipd/handzone.git)
