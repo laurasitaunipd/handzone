@@ -4,19 +4,21 @@ This repository hosts materials related to two research presentations delivered 
 
 ## Causal Inference – March 27th, 2025
 
-- **Title**: *Causal Inference in Psychopathology*
+- **Title**: *Causal Inference, DAGs and Propensity Scores*
 - **Date**: March 27th, 2025
-- **Access PDF**: [View Presentation](https://laurasitaunipd.github.io/handzone/causal-inference/causal-inference.pdf)
+- **Access PDF**: [https://laurasitaunipd.github.io/handzone/causal-inference/causal-inference.pdf](https://laurasitaunipd.github.io/handzone/causal-inference/causal-inference.pdf)
+- **Authors**: Marco Tullio Liuzza, Laura Sità
 
-This presentation introduces core principles of causal inference with a special emphasis on applications in psychological science. The talk covers directed acyclic graphs (DAGs), treatment effects, and challenges in modeling complex psychiatric constructs.
+This presentation introduces key concepts of causal inference in psychology using observational data with a focus on Directed Acyclic Graphs (DAGs), confounding and collider bias and adjustment strategies including propensity score methods.
 
 ## Latent Genetic Factors – October 30th, 2025
 
 - **Title**: *Causal Inference for Latent Genetic Factors Underlying Psychopathology*
 - **Date**: October 30th, 2025
-- **Access HTML**: [View Presentation](https://laurasitaunipd.github.io/handzone/project/latent-genetic-factors.html)
+- **Access HTML**: [https://laurasitaunipd.github.io/handzone/project/latent-genetic-factors.html](https://laurasitaunipd.github.io/handzone/project/latent-genetic-factors.html)
+- **Author**: Laura Sità
 
-This talk builds on the previous work by applying causal reasoning to genetically informed models. It introduces methods for identifying latent genetic dimensions and estimating treatment effects in the presence of latent structure.
+This presentation applies causal inference methods to estimate how latent genetic factors differ between individuals with and without a psychological disorder, using high-dimensional genomic data.
 
 ---
 
