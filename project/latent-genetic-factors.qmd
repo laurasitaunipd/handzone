@@ -82,17 +82,16 @@ Classification of psychopathology
 
 # Research Question
 
-How do we identify the broad (latent) factors?
+How do we identify broad **factors that index shared genetic liability** within/across disorders?
 
-- approach by Grotzinger et al., 2022: genomic structural equation modeling (genomic SEM)
-- proposed approach: Non-negative matrix factorization (NMF), inspired by Landy et al., 2025
+- approach by Grotzinger et al. (2022): **genomic Structural Equation Modeling (genomic SEM)**
+- proposed approach,  inspired by Landy et al. (2025): **Non-negative Matrix Factorization (NMF)**
 
 # Genomic SEM 
 
-apply genomic SEM to genome-wide association study (GWAS) data to examine the genetic architecture of 11 major psychiatric disorders
+apply genomic SEM to Genome-Wide Association Study (GWAS) data to examine the genetic architecture of 11 major psychiatric disorders
 
-identify four broad factors that index shared genetic liability within
-and across constellations of disorders.
+
 
 # Proposed approach
 ```{r setup}
@@ -116,7 +115,7 @@ NMF decomposes
 </p>
 
 <center style="font-size:70%">
-the full observed data matrix $\mathbf{Y} \in \mathbb{R}^{D \times N}$ of $N$ individuals $i$
+the full observed data matrix $\mathbf{Y} \in \mathbb{R}_{\ge 0}^{D \times N}$ of $N$ individuals $i$
 </center>
 
 <p style="font-size:80%; text-align:left; line-height:1.2;">
@@ -180,7 +179,7 @@ plotxslide
 
 ## Estimating the latent factors
 
-NMF used in two algorithms using `causalLFO` package
+NMF used in two algorithms using the R package `causalLFO`
 
 ```{r chat}
 #| include: true
@@ -215,6 +214,22 @@ plot_latent_factor(2, true_C, all_data_fit, impute_and_stabilize_fit)
 plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
 
 ```
+
+# Analytical Framework
+
+- Use the same dataset from Grotzinger et al. (2022), the UK Biobank
+
+- Estimate 4 latent factors using the NMF through the Impute and Stabilize algorithm  
+
+- Compare the results with the ones obtained with the genomic SEM
+
+# Future steps 
+
+If the results are encouraging ...
+
+- Estimate the **causal Average Treatment Effects (ATEs)** of multiple psychological disorders on latent outcomes derived from NMF
+
+- **Compare ATEs** across disorders belonging to the same or different spectra to **uncover shared genetic factors**
 
 # Materials 
 All the materials are available in the `project` folder inside the following repository <a href="https://github.com/laurasitaunipd/handzone.git" target="_blank">laurasitaunipd/handzone</a>.
