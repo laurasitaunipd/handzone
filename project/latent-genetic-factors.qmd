@@ -9,7 +9,7 @@ format:
     footer: "HandZone October 30th, 2025"
     theme: simple
     output-file: "latent-genetic-factors.html"
-toc: false
+toc: true
 execute:
   cache: false
   freeze: false
@@ -46,6 +46,22 @@ include-in-header:
       </style>
 ---
 
+# Introduction
+
+(Kotov et al., 2017)
+
+# Problem
+
+How do we find the latent factors?
+
+- possible approach genomic SEM (Grotzinger et al., 2022)
+- using the Non-negative matrix factorization (NMF), inspired by Landy et al., 2025
+
+# Genomic SEM (Grotzinger et al., 2022)
+
+
+
+# NMF 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(knitr)
@@ -53,12 +69,39 @@ library(ggridges)
 library(ggplot2)
 ```
 
-# Boh
-
 ```{r nmf}
 #| echo: false
+#| include: false
 source("nmf.R")
 ```
+
+## Data
+
+NMF decomposes the full observed data matrix $\mathbf{Y} \in \mathbb{R}_{\ge 0}^{D \times N}$ into two lower-rank matrices:
+
+factors $\mathbf{\lambda} \in \mathbb{R}_{\ge 0}^{D \times K}$
+
+individual contributions $\mathbf{L} \in \mathbb{R}_{\ge 0}^{K \times N}$
+
+We assume Poisson-generated data as follows:
+
+$$
+Y_{di} \sim \text{Poisson}\!\left(\sum_{k=1}^{K} \lambda_{dk} L_{ki}\right)
+$$
+
+
+
+```{r par}
+#| include: true
+#| echo: true 
+
+set.seed(321)
+N = 100 # number of i subjects 
+D = 96 # number of observed variables 
+K = 3 # number of latent factors
+```
+
+## Data simulation
 
 ```{r grafico}
 #| echo: false
@@ -86,10 +129,21 @@ plotxslide
 
 ```
 
-# fattore latente
+## Estimating the latent factors
 
+NMF used in two algorithms 
 
-# fattore latente
+```{r chat}
+#| include: true
+#| echo: true 
+
+all_data_fit <- all_data(M, Tr, rank = 3, reference_P = true_P)
+impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 3, reference_P = true_P)
+
+impute_and_stabilize_fit$Chat[, 1:6] # showing first 6 columns
+
+```
+##  
 ```{r graficoChatF1}
 #| echo: false
 
@@ -97,7 +151,7 @@ plot_latent_factor(1, true_C, all_data_fit, impute_and_stabilize_fit)
 
 ```
 
-# fattore latente
+## 
 ```{r graficoChatF2}
 #| echo: false
 
@@ -105,7 +159,7 @@ plot_latent_factor(2, true_C, all_data_fit, impute_and_stabilize_fit)
 
 ```
 
-# fattore latente
+## 
 ```{r graficoChatF3}
 #| echo: false
 
@@ -114,4 +168,12 @@ plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
 ```
 
 # Materials 
-Tutto il materiale è disponibile nella cartella `project` della repo <a href="https://github.com/laurasitaunipd/handzone.git" target="_blank">laurasitaunipd/handzone</a>.
+All the materials are available in the `project` folder inside the following repository <a href="https://github.com/laurasitaunipd/handzone.git" target="_blank">laurasitaunipd/handzone</a>.
+
+# Bibliography
+
+Grotzinger, A. D., Mallard, T. T., Akingbuwa, W. A., Ip, H. F., Adams, M. J., Lewis, C. M., ... & Nivard, M. G. (2022). Genetic architecture of 11 major psychiatric disorders at biobehavioral, functional genomic and molecular genetic levels of analysis. Nature genetics, 54(5), 548-559.
+
+Kotov, R., Krueger, R. F., Watson, D., Achenbach, T. M., Althoff, R. R., Bagby, R. M., ... & Zimmerman, M. (2017). The Hierarchical Taxonomy of Psychopathology (HiTOP): A dimensional alternative to traditional nosologies. Journal of abnormal psychology, 126(4), 454.
+
+Landy, J. M., Zorzetto, D., De Vito, R., & Parmigiani, G. (2025). Causal Inference for Latent Outcomes Learned with Factor Models. arXiv preprint arXiv:2506.20549.

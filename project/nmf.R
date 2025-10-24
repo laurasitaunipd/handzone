@@ -76,14 +76,14 @@ for (i in 1:N) {
 all_data_fit <- all_data(M, Tr, rank = 3, reference_P = true_P)
 impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 3, reference_P = true_P)
 
-# Fattori latenti stimati
-L_all <- all_data_fit$L_hat
-L_IS  <- impute_and_stabilize_fit$L_hat
+all_data_fit$sim_mat
+impute_and_stabilize_fit$sim_mat
 
 # visualizzo Chat(Lhat)
 impute_and_stabilize_fit$Chat
 class(impute_and_stabilize_fit$Chat)
 dim(impute_and_stabilize_fit$Chat) # 3 fattori x 100 sogg
+#View(impute_and_stabilize_fit$Chat)
 
 # SOLO PER K1 CONFRONTO ALGORITMI CON ANCHE C-VERI
 # Estrai i fattori stimati (le Chat)
@@ -141,11 +141,24 @@ all_data_res <- all_data(
   M, Tr, rank = 3, reference_P = true_P)
 summary(all_data_res)
 
+# con anche valori veri dell'ATE
+true_res <- list(ATE = ATE)
+
 res_list <- list(
-  'All Data' = all_data_res,
-  'Impute and Stabilize' = impute_and_stabilize_res
+  "All Data" = all_data_res,
+  "Impute and Stabilize" = impute_and_stabilize_res,
+  "True values" = true_res
 )
-plot_causalLFO_results(res_list)
+
+plot_causalLFO_results(res_list) + scale_color_manual(
+  values = c(
+    "All Data"                 = "darkorange",  
+    "Impute and Stabilize"     = "blue",  
+    "True values"              = "#77dd77"  
+  )
+)
+
+
 
 ####################################################### PROVA SENZA REFERENCE_P
 impute_and_stabilize_res_noP <- impute_and_stabilize(
