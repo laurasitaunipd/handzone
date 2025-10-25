@@ -64,6 +64,15 @@ include-in-header:
       </style>
 ---
 
+```{r setup}
+#| include: false
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(knitr)
+library(ggridges)
+library(ggplot2)
+```
+
+
 # Introduction
 
 Classification of psychopathology
@@ -87,20 +96,33 @@ How do we identify broad **factors that index shared genetic liability** within/
 - approach by Grotzinger et al. (2022): **genomic Structural Equation Modeling (genomic SEM)**
 - proposed approach,  inspired by Landy et al. (2025): **Non-negative Matrix Factorization (NMF)**
 
-# Genomic SEM 
+## Genomic SEM
 
-apply genomic SEM to Genome-Wide Association Study (GWAS) data to examine the genetic architecture of 11 major psychiatric disorders
+<p style="font-size:70%; text-align:left">
+- Genomic SEM to GWAS summary statistics from **11 major psychiatric disorders**
+</p>
 
+<p style="font-size:70%; text-align:left">
+- Estimated the **genetic covariance matrix** among disorders 
+</p>
 
+```{r image1}
+#| echo: false
+#| fig-align: center
+#| out-width: 100%
+
+knitr::include_graphics("images/image1.png")
+```
+
+<center style="font-size:40%">
+(Grotzinger et al., 2022, p. 550)
+</center>
+
+<p style="font-size:70%; text-align:left">
+- Modeled the matrix using a **four-factor structure** that captures shared genetic influences
+</p>
 
 # Proposed approach
-```{r setup}
-#| include: false
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
-library(knitr)
-library(ggridges)
-library(ggplot2)
-```
 
 ```{r nmf}
 #| echo: false
@@ -144,7 +166,7 @@ $$
 #| echo: true 
 
 set.seed(321)
-N = 100 # number of i subjects 
+N = 100 # number of subjects 
 D = 96 # number of observed variables 
 K = 3 # number of latent factors
 ```
@@ -219,9 +241,9 @@ plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
 
 - Use the same dataset from Grotzinger et al. (2022), the UK Biobank
 
-- Estimate 4 latent factors using the NMF through the Impute and Stabilize algorithm  
+- Estimate **four latent factors** ($L_1,..., L_4$) using the NMF through the Impute and Stabilize algorithm  
 
-- Compare the results with the ones obtained with the genomic SEM
+- Compare the identified $L_k$ with the factors obtained with the genomic SEM
 
 # Future steps 
 

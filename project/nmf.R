@@ -1,7 +1,7 @@
 # installare
 #install.packages("remotes")
 #if (!requireNamespace("BiocManager", quietly = TRUE))
-  #install.packages("BiocManager")
+#install.packages("BiocManager")
 #BiocManager::install("Biobase")
 #remotes::install_github("jennalandy/causalLFO")
 #install.packages("lsa")
@@ -22,6 +22,8 @@ library(ggplot2)
 rm(list=ls())
 set.seed(321)
 N = 100; D = 96; K = 3; ATE = c(1000, 0, 0)
+
+ATE
 
 # Simulate treatment assignment
 Tr = sample(c(0, 1), N, replace = TRUE)
@@ -152,8 +154,8 @@ res_list <- list(
 
 plot_causalLFO_results(res_list) + scale_color_manual(
   values = c(
-    "All Data"                 = "darkorange",  
-    "Impute and Stabilize"     = "blue",  
+    "All Data"                 = "#e34a33",  
+    "Impute and Stabilize"     = "#0570b0",  
     "True values"              = "#77dd77"  
   )
 )
@@ -191,6 +193,7 @@ plot_causalLFO_results(res_list) + scale_color_manual(
 
 ############################# APPLICAZIONE SU 100 DATASET SIMULATI (usando le funzioni in simulate.r)
 
-source("/Users/laura/Desktop/GITHUB/handzone/project/simulate.R")
-# in caso metti un percorso assoluto che apra il file dalla cartella
+source("simulate.R")
+
+
 
