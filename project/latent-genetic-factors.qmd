@@ -91,10 +91,10 @@ Classification of psychopathology
 
 # Research Question
 
-How do we identify broad **factors that index shared genetic liability** within/across disorders?
+How can we uncover **latent factors** capturing **shared genetic risk** across disorders?
 
-- approach by Grotzinger et al. (2022): **genomic Structural Equation Modeling (genomic SEM)**
-- proposed approach,  inspired by Landy et al. (2025): **Non-negative Matrix Factorization (NMF)**
+- Existing approach (Grotzinger et al., 2022): **Genomic Structural Equation Modeling (genomic SEM)**
+- Proposed approach (inspired by Landy et al., 2025): **Non-negative Matrix Factorization (NMF)**
 
 # Genomic SEM
 
@@ -227,7 +227,7 @@ If the results are encouraging ...
 - **Compare ATEs** across disorders belonging to the same or different spectra to **uncover shared genetic factors**
 
 # Materials 
-All the materials are available in the `project` folder inside the following repository <a href="https://github.com/laurasitaunipd/handzone.git" target="_blank">laurasitaunipd/handzone</a>.
+All materials are available on GitHub in the `project` folder of the repository <a href="https://github.com/laurasitaunipd/handzone.git" target="_blank">laurasitaunipd/handzone</a>
 
 # Bibliography
 
@@ -275,7 +275,7 @@ plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
 ```
 
 <center style="font-size:60%">
-<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values of individual contributions
 </center>
 
 ##
