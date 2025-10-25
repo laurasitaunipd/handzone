@@ -30,7 +30,7 @@ include-in-header:
         background-repeat: no-repeat;
         background-position: center;
         background-size: contain;
-        height: 150px;
+        height: 250px;
         margin-top: 1.5em;
       }
 
@@ -102,24 +102,14 @@ How can we uncover **latent factors** capturing **shared genetic risk** across d
 - GWAS summary statistics from **11 major psychiatric disorders**
 </p>
 
-<p style="font-size:60%; text-align:left">
-- Estimated the **genetic covariance matrix** among disorders 
-</p>
-
-```{r image1}
-#| echo: false
-#| fig-align: center
-#| out-width: 120%
-
-knitr::include_graphics("images/image1.png")
-```
+<img src="images/image1.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%; max-width: 1000px;">
 
 <center style="font-size:40%">
-(Grotzinger et al., 2022, p. 550)
+Grotzinger et al., 2022, p. 550
 </center>
 
 <p style="font-size:60%; text-align:left">
-- Modeled the matrix using a **four-factor structure**
+- **Four factors** underlie genetic correlations among the disorders
 </p>
 
 # Proposed approach
@@ -182,16 +172,19 @@ grafico_datasim
 
 ## Estimating the latent factors
 
-NMF used in two algorithms using the R package `causalLFO`
+NMF implemented through two algorithms in the R package `causalLFO`
 
 ```{r chat}
 #| include: true
 #| echo: true 
 
 all_data_fit <- all_data(M, Tr, rank = 4, reference_P = true_P)
-impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 4, reference_P = true_P)
+impute_and_stabilize_fit <- impute_and_stabilize(M, 
+                                                 Tr, 
+                                                 rank = 4,
+                                                 reference_P = true_P)
 
-impute_and_stabilize_fit$Chat[, 1:6] # showing first 6 columns
+impute_and_stabilize_fit$Chat[, 1:6] # first 6 columns
 
 ```
 
@@ -207,16 +200,17 @@ plot_latent_factor(1, true_C, all_data_fit, impute_and_stabilize_fit)
 ```
 
 <center style="font-size:60%">
-<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values of individual contributions
 </center>
 
 # Analytical Framework
 
-- Use the same dataset from Grotzinger et al. (2022), the UK Biobank
+- Use the same dataset as Grotzinger et al. (2022), UK Biobank  
 
-- Estimate **four latent factors** ($L_1,..., L_4$) using the NMF through the Impute and Stabilize algorithm  
+- Estimate **four latent factors** ($L_1, \dots, L_4$) using NMF via the Impute and Stabilize algorithm  
 
-- Compare the identified $L_k$ with the factors obtained with the genomic SEM
+- Compare the identified $L_k$ with those obtained through genomic SEM
+
 
 # Future steps 
 
@@ -275,7 +269,7 @@ plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
 ```
 
 <center style="font-size:60%">
-<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values of individual contributions
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
 </center>
 
 ##
