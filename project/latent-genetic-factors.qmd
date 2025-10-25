@@ -96,20 +96,20 @@ How do we identify broad **factors that index shared genetic liability** within/
 - approach by Grotzinger et al. (2022): **genomic Structural Equation Modeling (genomic SEM)**
 - proposed approach,  inspired by Landy et al. (2025): **Non-negative Matrix Factorization (NMF)**
 
-## Genomic SEM
+# Genomic SEM
 
-<p style="font-size:70%; text-align:left">
-- Genomic SEM to GWAS summary statistics from **11 major psychiatric disorders**
+<p style="font-size:60%; text-align:left">
+- GWAS summary statistics from **11 major psychiatric disorders**
 </p>
 
-<p style="font-size:70%; text-align:left">
+<p style="font-size:60%; text-align:left">
 - Estimated the **genetic covariance matrix** among disorders 
 </p>
 
 ```{r image1}
 #| echo: false
 #| fig-align: center
-#| out-width: 100%
+#| out-width: 120%
 
 knitr::include_graphics("images/image1.png")
 ```
@@ -118,8 +118,8 @@ knitr::include_graphics("images/image1.png")
 (Grotzinger et al., 2022, p. 550)
 </center>
 
-<p style="font-size:70%; text-align:left">
-- Modeled the matrix using a **four-factor structure** that captures shared genetic influences
+<p style="font-size:60%; text-align:left">
+- Modeled the matrix using a **four-factor structure**
 </p>
 
 # Proposed approach
@@ -145,8 +145,8 @@ into two lower-rank matrices:
 </p>
 
 <center style="font-size:65%">
-factors $\mathbf{\Lambda} \in \mathbb{R}_{\ge 0}^{D \times K}$  
-individual contributions $\mathbf{L} \in \mathbb{R}_{\ge 0}^{K \times N}$
+<span style="color:#900000;">Pattern</span> matrix (global signatures) $\mathbf{\Lambda} \in \mathbb{R}_{\ge 0}^{D \times K}$  
+<span style="color:#900000;">Coefficient</span> matrix (individual contributions) $\mathbf{L} \in \mathbb{R}_{\ge 0}^{K \times N}$
 </center>
 
 <div style="margin-top:1.5cm;"></div>
@@ -160,7 +160,6 @@ Y_{di} \sim \text{Poisson}\!\left(\sum_{k=1}^{K} \lambda_{dk} L_{ki}\right)
 $$
 </p>
 
-
 ```{r par}
 #| include: true
 #| echo: true 
@@ -168,7 +167,7 @@ $$
 set.seed(321)
 N = 100 # number of subjects 
 D = 96 # number of observed variables 
-K = 3 # number of latent factors
+K = 4 # number of latent factors
 ```
 
 ## Data simulation
@@ -177,25 +176,7 @@ K = 3 # number of latent factors
 #| echo: false
 #| message: false
 
-plotxslide <- ggplot(df, aes(x = C, y = as.factor(k), fill = Tr)) +
-  geom_density_ridges(alpha = 0.6) +
-  theme_bw(base_size = 18) +
-  labs(
-    x = "Latent outcome distribution", 
-    y = "Latent dimension",
-    fill = "Group"
-  ) +
-  theme(
-    axis.title.x = element_text(size = 22, margin = margin(t = 20)),
-    axis.title.y = element_text(size = 22, margin = margin(r = 20)),
-    axis.text = element_text(size = 20),
-    legend.title = element_text(size = 29),
-    legend.text = element_text(size = 22),
-    plot.title = element_text(size = 24, face = "bold", hjust = 0.5),
-    axis.text.y = element_text(margin = margin(r = 13))
-  )
-
-plotxslide
+grafico_datasim
 
 ```
 
@@ -207,35 +188,27 @@ NMF used in two algorithms using the R package `causalLFO`
 #| include: true
 #| echo: true 
 
-all_data_fit <- all_data(M, Tr, rank = 3, reference_P = true_P)
-impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 3, reference_P = true_P)
+all_data_fit <- all_data(M, Tr, rank = 4, reference_P = true_P)
+impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 4, reference_P = true_P)
 
 impute_and_stabilize_fit$Chat[, 1:6] # showing first 6 columns
 
 ```
-##  
-```{r graficoChatF1}
+
+##
+
+Estimate of latent factor $L_1$
+
+```{r graficoChatL1}
 #| echo: false
 
 plot_latent_factor(1, true_C, all_data_fit, impute_and_stabilize_fit)
 
 ```
 
-## 
-```{r graficoChatF2}
-#| echo: false
-
-plot_latent_factor(2, true_C, all_data_fit, impute_and_stabilize_fit)
-
-```
-
-## 
-```{r graficoChatF3}
-#| echo: false
-
-plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
-
-```
+<center style="font-size:60%">
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
+</center>
 
 # Analytical Framework
 
@@ -272,3 +245,50 @@ Kotov, R., Krueger, R. F., Watson, D., Achenbach, T. M., Althoff, R. R., Bagby, 
 <p style="font-size:70%; text-align:left; line-height:1.2;">
 Landy, J. M., Zorzetto, D., De Vito, R., & Parmigiani, G. (2025). Causal Inference for Latent Outcomes Learned with Factor Models. arXiv preprint arXiv:2506.20549.
 </p>
+
+# Supplemental Materials
+
+##
+
+Estimate of latent factor $L_2$
+
+```{r graficoChatL2}
+#| echo: false
+
+plot_latent_factor(2, true_C, all_data_fit, impute_and_stabilize_fit)
+
+```
+
+<center style="font-size:60%">
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
+</center>
+
+##
+
+Estimate of latent factor $L_3$
+
+```{r graficoChatL3}
+#| echo: false
+
+plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
+
+```
+
+<center style="font-size:60%">
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
+</center>
+
+##
+
+Estimate of latent factor $L_4$
+
+```{r graficoChatL4}
+#| echo: false
+
+plot_latent_factor(4, true_C, all_data_fit, impute_and_stabilize_fit)
+
+```
+
+<center style="font-size:60%">
+<span style="color:#900000;">red line</span> = perfect correspondence between true and estimated values
+</center>

@@ -21,9 +21,7 @@ library(ggplot2)
 # A) SIMULAZIONE DEL DATASET
 rm(list=ls())
 set.seed(321)
-N = 100; D = 96; K = 3; ATE = c(1000, 0, 0)
-
-ATE
+N = 100; D = 96; K = 4; ATE = c(1000, 0, 0, 0)
 
 # Simulate treatment assignment
 Tr = sample(c(0, 1), N, replace = TRUE)
@@ -38,9 +36,10 @@ true_C = matrix(nrow = K, ncol = N)
 true_C[1,] <- rgamma(N, shape = 1, scale = 1000) # larger scale for factor 1
 true_C[2,] <- rexp(N, rate = 0.01)
 true_C[3,] <- rexp(N, rate = 0.01)
-true_C[3,sample(1:N, 10)] <- rnorm(10, mean = 1500, sd = 1000) # outliers for factor 3
+true_C[4,] <- rexp(N, rate = 0.01)
+true_C[4,sample(1:N, 10)] <- rnorm(10, mean = 1500, sd = 1000) # outliers for factor 4
 data.frame(t(true_C)) %>%
-  setNames(paste0("k", 1:K)) %>%   # rinomina le colonne come k1, k2, k3
+  setNames(paste0("k", 1:K)) %>%   # rinomina le colonne come k1, k2, k3, k4
   pivot_longer(1:K, names_to = 'k', values_to = 'C') %>%
   ggplot(aes(x = C, y = as.factor(k))) +
   geom_density_ridges() +
@@ -52,20 +51,23 @@ for (k in 1:K) {
   true_C[k, Tr == 1] <- true_C[k, Tr == 1] + ATE[k]
 }
 
-# comparing and visualizing true_c treated vs untreated
+# Comparing and visualizing true_C treated vs untreated
 df <- data.frame(t(true_C)) %>% 
-  setNames(paste0("k", 1:K)) %>%   # rinomina le colonne come k1, k2, k3
+  setNames(paste0("k", 1:K)) %>%   # rinomina le colonne come k1, k2, k3, k4
   mutate(Tr = factor(Tr, levels = c(0,1), labels = c("Untreated", "Treated"))) %>% 
   pivot_longer(cols = paste0("k", 1:K), names_to = "k", values_to = "C")
 
-plotxslide <- ggplot(df, aes(x = C, y = as.factor(k), fill = Tr)) +
+grafico_datasim <- ggplot(df, aes(x = C, y = as.factor(k), fill = Tr)) +
   geom_density_ridges(alpha = 0.6) +
   theme_bw() +
-  labs(x = "Latent outcome distribution", 
-       y = "Latent dimension",
-       fill = "Group")
+  scale_y_discrete(labels = paste0("L", 1:K)) + 
+  labs(
+    x = "Individual contributions", 
+    y = "Latent factors",
+    fill = "Group"
+  )
 
-plotxslide
+grafico_datasim
 
 # Simulate M ~ Poisson(PC)
 M = matrix(nrow = D, ncol = N)
@@ -75,19 +77,26 @@ for (i in 1:N) {
 
 # B) STIME DI TRUE_P(LAMBDA) E TRUE_C(L)
 
-all_data_fit <- all_data(M, Tr, rank = 3, reference_P = true_P)
-impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 3, reference_P = true_P)
+all_data_fit <- all_data(M, Tr, rank = 4, reference_P = true_P)
+impute_and_stabilize_fit <- impute_and_stabilize(M, Tr, rank = 4, reference_P = true_P)
 
-all_data_fit$sim_mat
-impute_and_stabilize_fit$sim_mat
+reorder_sim_mat <- function(sim_mat) {
+  best_match <- apply(sim_mat, 1, which.max)
+  sim_reordered <- sim_mat[, best_match, drop = FALSE]
+  rownames(sim_reordered) <- paste0("True L", 1:nrow(sim_reordered))
+  colnames(sim_reordered) <- paste0("Estimated L", 1:ncol(sim_reordered))
+  sim_reordered
+}
+
+sim_all <- reorder_sim_mat(all_data_fit$sim_mat)
+sim_is  <- reorder_sim_mat(impute_and_stabilize_fit$sim_mat)
 
 # visualizzo Chat(Lhat)
 impute_and_stabilize_fit$Chat
 class(impute_and_stabilize_fit$Chat)
-dim(impute_and_stabilize_fit$Chat) # 3 fattori x 100 sogg
+dim(impute_and_stabilize_fit$Chat) # 4 fattori x 100 sogg
 #View(impute_and_stabilize_fit$Chat)
 
-# SOLO PER K1 CONFRONTO ALGORITMI CON ANCHE C-VERI
 # Estrai i fattori stimati (le Chat)
 Chat_all <- all_data_fit$Chat
 Chat_IS  <- impute_and_stabilize_fit$Chat
@@ -102,7 +111,7 @@ plot_latent_factor <- function(k, true_C, all_data_fit, impute_and_stabilize_fit
   )
   
   ggplot(df_plot, aes(x = True, y = Estimated, color = Method)) +
-    geom_point(alpha = 0.6, size = 2) +                         # punti semitrasparenti
+    geom_point(alpha = 0.6, size = 2) +  # punti semitrasparenti
     geom_abline(intercept = 0, slope = 1, color = "red", linewidth = 1) +  # linea 1:1
     theme_bw() +
     theme(
@@ -116,10 +125,10 @@ plot_latent_factor <- function(k, true_C, all_data_fit, impute_and_stabilize_fit
     ) +
     labs(
       x = paste("True latent factor", k),
-      y = paste("Estimated latent factor", k),
-      title = paste("Comparison of latent factor", k)
+      y = paste("Estimated latent factor", k)
     )
 }
+
 
 # Fattore 1
 plot_latent_factor(1, true_C, all_data_fit, impute_and_stabilize_fit)
@@ -130,26 +139,17 @@ plot_latent_factor(2, true_C, all_data_fit, impute_and_stabilize_fit)
 # Fattore 3
 plot_latent_factor(3, true_C, all_data_fit, impute_and_stabilize_fit)
 
+# Fattore 4
+plot_latent_factor(4, true_C, all_data_fit, impute_and_stabilize_fit)
+
 
 # C) ATE E CONFRONTO DEI DUE ALGORITMI 
-impute_and_stabilize_res <- impute_and_stabilize(
-  M, Tr, rank = 3, reference_P = true_P
-)
-class(impute_and_stabilize_res)
-summary(impute_and_stabilize_res)
-plot(impute_and_stabilize_res)
-
-all_data_res <- all_data(
-  M, Tr, rank = 3, reference_P = true_P)
-summary(all_data_res)
-
-# con anche valori veri dell'ATE
-true_res <- list(ATE = ATE)
+true_ate <- list(ATE = ATE) # aggiungo ATE simulato
 
 res_list <- list(
-  "All Data" = all_data_res,
-  "Impute and Stabilize" = impute_and_stabilize_res,
-  "True values" = true_res
+  "All Data" = all_data_fit,
+  "Impute and Stabilize" = impute_and_stabilize_fit,
+  "True values" = true_ate
 )
 
 plot_causalLFO_results(res_list) + scale_color_manual(
@@ -163,19 +163,19 @@ plot_causalLFO_results(res_list) + scale_color_manual(
 
 
 ####################################################### PROVA SENZA REFERENCE_P
-impute_and_stabilize_res_noP <- impute_and_stabilize(
-  M, Tr, rank = 3)
-summary(impute_and_stabilize_res_noP)
+impute_and_stabilize_fit_noP <- impute_and_stabilize(
+  M, Tr, rank = 4)
+summary(impute_and_stabilize_fit_noP)
 
-all_data_res_noP <- all_data(
-  M, Tr, rank = 3)
-summary(all_data_res_noP)
+all_data_fit_noP <- all_data(
+  M, Tr, rank = 4)
+summary(all_data_fit_noP)
 
 res_list <- list(
-  'All Data' = all_data_res,
-  'All Data noP' = all_data_res_noP,
-  'Impute and Stabilize' = impute_and_stabilize_res,
-  'Impute and Stabilize noP' = impute_and_stabilize_res_noP
+  'All Data' = all_data_fit,
+  'All Data noP' = all_data_fit_noP,
+  'Impute and Stabilize' = impute_and_stabilize_fit,
+  'Impute and Stabilize noP' = impute_and_stabilize_fit_noP
 )
 
 plot_causalLFO_results(res_list) + scale_color_manual(
@@ -188,12 +188,10 @@ plot_causalLFO_results(res_list) + scale_color_manual(
 )
 
 
-
-
-
 ############################# APPLICAZIONE SU 100 DATASET SIMULATI (usando le funzioni in simulate.r)
 
 source("simulate.R")
+
 
 
 
